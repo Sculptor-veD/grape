@@ -10,9 +10,10 @@ import {
   FlatList,
   Alert,
   Modal,
+  Button,
 } from 'react-native';
 import {Loading} from '../components/LoadingComponent';
-import {Rating, Icon} from 'react-native-elements';
+import {Rating, Icon, Card} from 'react-native-elements';
 import MaskedView from '@react-native-community/masked-view';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import {useSelector} from 'react-redux';
@@ -116,6 +117,16 @@ function Recipes({navigation}) {
     return (
       <View style={styles.container}>
         <Backdrop data={data} scrollX={scrollX} />
+        <View style={styles.header}>
+          <Icon
+            name="pencil"
+            size={30}
+            type="ionicon"
+            color="white"
+            onPress={() => ToggleModal()}
+          />
+        </View>
+
         <StatusBar hidden />
         <Animated.FlatList
           data={data.reverse()}
@@ -141,9 +152,34 @@ function Recipes({navigation}) {
             }}>
             <View style={styles.centeredView}>
               <View style={styles.modalView}>
-                <Text style={styles.modalText}>Hello World!</Text>
-
-                <Text style={styles.textStyle}>Hide Modal</Text>
+                <View
+                  style={{
+                    flex: 1 / 3,
+                    backgroundColor: 'red',
+                    width: '100%',
+                    flexDirection: 'row',
+                  }}>
+                  <View
+                    style={{
+                      flex: 1 / 2,
+                      justifyContent: 'flex-end',
+                      padding: 20,
+                      alignItems: 'center',
+                    }}>
+                    <Image
+                      style={styles.img}
+                      source={require('../asset/mango.png')}
+                    />
+                    <Button title="Upload Image" />
+                  </View>
+                  <View
+                    style={{
+                      backgroundColor: 'yellow',
+                      flex: 1,
+                      width: '100%',
+                      height: '100%',
+                    }}></View>
+                </View>
               </View>
             </View>
           </Modal>
@@ -164,18 +200,6 @@ Recipes.navigationOptions = ({navigation}) => ({
       color="white"
       containerStyle={{paddingLeft: 30, paddingTop: StatusBar.currentHeight}}
       onPress={() => navigation.openDrawer()}
-    />
-  ),
-  headerRight: () => (
-    <Icon
-      name="add-outline"
-      type="ionicon"
-      size={30}
-      color="white"
-      containerStyle={{
-        paddingRight: 10,
-        paddingTop: StatusBar.currentHeight,
-      }}
     />
   ),
 });
@@ -202,6 +226,41 @@ const styles = StyleSheet.create({
   },
   description: {
     color: 'white',
+  },
+  header: {
+    alignItems: 'flex-end',
+    paddingRight: 20,
+    paddingTop: StatusBar.currentHeight,
+  },
+  centeredView: {
+    flex: 1,
+    // justifyContent: 'center',
+    // alignItems: 'center',
+    // marginTop: 22,
+  },
+  modalView: {
+    // margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    // padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    flex: 1,
+    width: '100%',
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  img: {
+    width: '100%',
+    height: '38%',
+    resizeMode: 'cover',
+    backgroundColor: 'blue',
+    marginBottom: 20,
   },
 });
 
