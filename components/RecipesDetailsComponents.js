@@ -23,7 +23,7 @@ function RecipesDetails({navigation}) {
       <Image style={styles.img} source={require('../asset/mango.png')} />
       <View style={styles.detailsView}>
         <View style={styles.contentDetails}>
-          <Text style={styles.headerText}>Đức đổ bóng</Text>
+         
           <Text style={styles.descriptionText}>Recipe Description</Text>
           <Text style={{marginTop: 10}}>
             A mango is a stone fruit produced from numerous species of tropical
@@ -46,9 +46,12 @@ function RecipesDetails({navigation}) {
     </View>
   );
 }
-RecipesDetails.navigationOptions = ({navigation}) => ({
+RecipesDetails.navigationOptions = () => ({
   headerTransparent: true,
   headerTitle: '',
+  headerLeft: () => (
+    <Icon name="heart" type="ionicon" size={50} color="#FFE9B8" />
+  ),
   headerRight: () => (
     <Icon name="heart" type="ionicon" size={50} color="#FFE9B8" />
   ),
