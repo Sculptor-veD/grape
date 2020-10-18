@@ -7,33 +7,36 @@ import {
   StatusBar,
   ImageBackground,
 } from 'react-native';
-import {useSelector} from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux';
 import {Icon} from 'react-native-elements';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
+import {
+  postComment,
+  postNewFavorite,
+  removeFavorite,
+} from './redux/ActionCreators';
 
-function RecipesDetails({navigation}) {
-  const dishId = navigation.getParam('dishId', '');
-  const data = useSelector((state) => state.dishes.dishes);
-  const temp = data;
-  const dataDishId = temp[dishId - 2];
-
+function RenderRecipe(props) {
+  const data = props.data;
   return (
     <View style={styles.container}>
       <StatusBar hidden />
-      <Image style={styles.img} source={require('../asset/mango.png')} />
+      <Image style={styles.img} source={{uri: data.imgs[0]}} />
       <View style={styles.detailsView}>
         <View style={styles.contentDetails}>
-         
-          <Text style={styles.descriptionText}>Recipe Description</Text>
-          <Text style={{marginTop: 10}}>
-            A mango is a stone fruit produced from numerous species of tropical
-            trees belonging to the flowering plant genus Mangifera, cultivated
-            mostly for their edible fruit. Most of these species are found in
-            nature as wild mangoes.
-          </Text>
+          <Text style={styles.descriptionText}>{data.name}</Text>
+          <Text style={{marginTop: 10}}>{data.description}</Text>
           <View style={styles.bottomView}>
             <View style={styles.btnBox}>
-              <Icon name="heart" type="ionicon" size={50} color="#FFE9B8" />
+              <Icon
+                name={props.favorite ? 'heart' : 'heart-o'}
+                type="font-awesome"
+                size={50}
+                color="#FFE9B8"
+                onPress={() =>
+                  props.favorite ? props.onRemove() : props.onPress()
+                }
+              />
             </View>
             <View>
               <TouchableOpacity style={styles.viewCommentBtn}>
@@ -46,15 +49,34 @@ function RecipesDetails({navigation}) {
     </View>
   );
 }
+
+function RecipesDetails({navigation}) {
+  const dishId = navigation.getParam('dishId', '');
+  const data = useSelector((state) => state.dishes.dishes);
+  const favorites = useSelector((state) => state.favorites);
+  const dispatch = useDispatch();
+  const dispatchNewFavorite = () => dispatch(postNewFavorite(dishId));
+  const dispatchRemoveFavorite = () => dispatch(removeFavorite(dishId));
+  function markFavorite() {
+    dispatchNewFavorite(dishId);
+    console.log(dishId, favorites);
+  }
+  function deleteFavorite() {
+    dispatchRemoveFavorite(dishId);
+    console.log(dishId, favorites);
+  }
+  return (
+    <RenderRecipe
+      data={data.filter((dish) => dish.id === dishId)[0]}
+      favorite={favorites.some((el) => el === dishId)}
+      onPress={() => markFavorite(dishId)}
+      onRemove={() => deleteFavorite(dishId)}
+    />
+  );
+}
 RecipesDetails.navigationOptions = () => ({
   headerTransparent: true,
   headerTitle: '',
-  headerLeft: () => (
-    <Icon name="heart" type="ionicon" size={50} color="#FFE9B8" />
-  ),
-  headerRight: () => (
-    <Icon name="heart" type="ionicon" size={50} color="#FFE9B8" />
-  ),
 });
 const styles = StyleSheet.create({
   container: {
@@ -74,7 +96,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFE9B8',
     width: '100%',
     height: '50%',
-    resizeMode: 'center',
+    resizeMode: 'cover',
     borderRadius: 24,
   },
   btnBox: {
@@ -114,6 +136,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 180,
+  },
+  reviewText: {
+    fontWeight: 'bold',
+  },
+  review: {
+    flex: 1 / 2,
   },
 });
 export default RecipesDetails;

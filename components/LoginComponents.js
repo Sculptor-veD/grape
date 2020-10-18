@@ -40,7 +40,12 @@ function Login({navigation}) {
     return null;
   }
   function handleLoginBtnLongPress() {
-    navigation.navigate('Drawer');
+    const resetAction = StackActions.reset({
+      index: 0,
+      actions: [NavigationActions.navigate({routeName: 'Drawer'})],
+    });
+    navigation.dispatch(resetAction);
+    //  navigation.navigate('Drawer');
   }
   function handleLoginBtn() {
     //validation

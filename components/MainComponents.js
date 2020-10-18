@@ -20,11 +20,6 @@ const RecipesStack = createStackNavigator(
     },
     RecipesDetails: {
       screen: RecipesDetails,
-      navigationOptions: () => ({
-        headerRight: () => (
-          <Icon name="heart" type="ionicon" size={50} color="#FFE9B8" />
-        ),
-      }),
     },
   },
   {
@@ -56,14 +51,22 @@ const MainStack = createStackNavigator(
   {
     Authen: {
       screen: AuthenticationStack,
+      navigationOptions: () => ({
+        headerTransparent: true,
+        headerTitle: '',
+      }),
     },
     Drawer: {
       screen: Drawer,
+      navigationOptions: () => ({
+        headerTransparent: true,
+        headerTitle: '',
+      }),
     },
   },
-  {headerMode: true, initialRouteName: 'Drawer'},
+  {initialRouteName: 'Authen'},
 );
-const AppContainter = createAppContainer(Drawer);
+const AppContainter = createAppContainer(MainStack);
 function Main() {
   const [didMount, setDidMount] = useState(false);
   const dispatch = useDispatch();

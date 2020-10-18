@@ -200,7 +200,6 @@ export const addFavorite = (dishId) => ({
 });
 
 export const postNewFavorite = (dishId) => (dispatch) => {
-  //setTimeout(() => dispatch(addNewFavorite(dishId)), 2000);
   dispatch(addNewFavorite(dishId));
 };
 
