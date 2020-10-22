@@ -9,13 +9,19 @@ import {
   Keyboard,
   Alert,
 } from 'react-native';
+import {baseUrl} from '../shared/baseUrl';
+import {postUser} from './redux/ActionCreators';
+import {connect} from 'react-redux';
+class Register extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      userName: '',
+      email: '',
+      password: '',
+    };
+  }
 
-export default class Register extends React.Component {
-  state = {
-    userName: '',
-    email: '',
-    password: '',
-  };
   handleUsername(text) {
     this.setState({
       userName: text,
@@ -53,19 +59,24 @@ export default class Register extends React.Component {
     }
     return null;
   };
-  handleRegister = () => {
+  handleRegister = async () => {
     //validation
-    const err =
-      this.userNameError() || this.passwordError() || this.emailError();
-    const errorFullnull =
-      this.userNameError() && this.passwordError() && this.emailError();
-    if (errorFullnull !== null) {
-      Alert.alert('You must fill out something!');
-      return;
-    } else if (err) {
-      Alert.alert('Validation error', err);
-      return;
-    }
+    // const err =
+    //   this.userNameError() || this.passwordError() || this.emailError();
+    // const errorFullnull =
+    //   this.userNameError() && this.passwordError() && this.emailError();
+    // if (errorFullnull !== null) {
+    //   Alert.alert('You must fill out something!');
+    //   return;
+    // } else if (err) {
+    //   Alert.alert('Validation error', err);
+    //   return;
+    // }
+    this.props.postUser(
+      this.state.userName,
+      this.state.password,
+      this.state.email,
+    );
   };
   render() {
     return (
@@ -91,6 +102,7 @@ export default class Register extends React.Component {
               onChangeText={(text) => this.handleEmail(text)}
               value={this.state.email}
             />
+            {console.log(this.props.user, 'suser')}
             <Text style={styles.label}>Password</Text>
             <TextInput
               style={styles.textInput}
@@ -172,3 +184,11 @@ const styles = StyleSheet.create({
     fontFamily: 'sans-serif',
   },
 });
+const mapDispatchToProps = (dispatch) => ({
+  postUser: (username, password, email) =>
+    dispatch(postUser(username, password, email)),
+});
+const mapStateToProps = (state) => ({
+  user: state.user.user,
+});
+export default connect(mapStateToProps, mapDispatchToProps)(Register);

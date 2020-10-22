@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   Text,
@@ -10,12 +10,19 @@ import {
 } from 'react-native';
 import {useState} from 'react';
 import {StackActions, NavigationActions} from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const {width, height} = Dimensions.get('window');
 function Login({navigation}) {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
-  const [isClicking, setClicking] = useState();
+  useEffect(() => {
+    const bootAsync = async () => {
+      const userToken = await AsyncStorage.getItem('userToken');
+      navigation.navigate(userToken ? 'App' : 'Authen');
+    };
+    bootAsync();
+  }, [navigation]);
   function handleEmail(text) {
     setEmail(text);
   }
@@ -40,12 +47,12 @@ function Login({navigation}) {
     return null;
   }
   function handleLoginBtnLongPress() {
-    const resetAction = StackActions.reset({
-      index: 0,
-      actions: [NavigationActions.navigate({routeName: 'Drawer'})],
-    });
-    navigation.dispatch(resetAction);
-    //  navigation.navigate('Drawer');
+    // const resetAction = StackActions.reset({
+    //   index: 0,
+    //   actions: [NavigationActions.navigate({routeName: 'App'})],
+    // });
+    // navigation.dispatch(resetAction);
+    navigation.navigate('App');
   }
   function handleLoginBtn() {
     //validation
@@ -93,6 +100,11 @@ function Login({navigation}) {
           onPress={handleLoginBtn}
           onLongPress={handleLoginBtnLongPress}>
           <Text style={styles.loginBtnLabel}>LOGIN</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.loginAsGuest}
+          onPress={() => navigation.navigate('App')}>
+          <Text style={styles.loginBtnLabel}>LOGIN AS GUEST</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -150,5 +162,15 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 15,
     fontFamily: 'sans-serif',
+  },
+  loginAsGuest: {
+    borderRadius: 20,
+    borderColor: '#fff',
+    borderWidth: 1,
+    backgroundColor: '#aaa',
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
   },
 });

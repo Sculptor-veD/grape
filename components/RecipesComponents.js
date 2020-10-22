@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StatusBar,
   Text,
@@ -11,12 +11,16 @@ import {
   Alert,
   Modal,
   Button,
+  AbortController,
 } from 'react-native';
 import {Loading} from '../components/LoadingComponent';
 import {Rating, Icon, Card} from 'react-native-elements';
 import MaskedView from '@react-native-community/masked-view';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
-import {useSelector} from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux';
+import {fetchDishes} from './redux/ActionCreators';
+import AsyncStorage from '@react-native-community/async-storage';
+
 const {width, height} = Dimensions.get('window');
 const ITEM_SIZE = width * 0.73;
 
@@ -67,6 +71,14 @@ function Recipes({navigation}) {
   const ToggleModal = () => {
     setModalVisible(!modalVisible);
   };
+  const dispatch = useDispatch();
+  useEffect(() => {
+    async function loadRecipes() {
+      dispatch(fetchDishes());
+      await AsyncStorage.setItem('userToken', 'abc');
+    }
+    if (isLoading) loadRecipes();
+  }, [isLoading, dispatch]);
   const renderItem = ({item, index}) => {
     const inputRange = [
       (index - 1) * ITEM_SIZE,

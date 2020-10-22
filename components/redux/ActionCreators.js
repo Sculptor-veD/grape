@@ -63,15 +63,7 @@ export const postComment = (dishId, rating, author, comments) => (dispatch) => {
 export const fetchDishes = () => (dispatch) => {
   dispatch(dishesLoading());
 
-  return fetch('https://dientoandm.herokuapp.com/api/Dish/getAllDish', {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    token:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6Ik5ndXnDqm4gxJHDtMyJIGJvzIFuZyIsInR5cGUiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE2MDI1Nzc4NjUsImV4cCI6MTYwMjYxMzg2NX0.YXhfYlcJmbyBhVaxj6ZvG2TV_GDG3qyeWCDspOa2a94',
-  })
+  return fetch('https://dientoandm.herokuapp.com/api/Dish/getAllDish')
     .then(
       (response) => {
         if (response.ok) {
@@ -214,4 +206,32 @@ export const removeFavorite = (dishId) => (dispatch) => {
 export const remove = (dishId) => ({
   type: ActionTypes.REMOVE_FAVORITE,
   payload: dishId,
+});
+export const addNewuser = (user) => ({
+  type: ActionTypes.ADD_USER,
+  payload: user,
+});
+
+export const postUser = (userName, password, email) => (dispatch) => {
+  dispatch(userLoading());
+  const user = {
+    username: userName,
+    pwd: password,
+    name: email,
+  };
+  console.log('user', user);
+  fetch(baseUrl + '/Account/createAccount', {
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+    body: user,
+  })
+    .then((res) => res.json())
+    .then((json) => console.log('postUser', json))
+    .then(() => dispatch(addNewuser(user)));
+};
+export const userLoading = () => ({
+  type: ActionTypes.USER_LOADING,
 });

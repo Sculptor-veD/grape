@@ -6,6 +6,7 @@ import {comments} from './comments';
 import {promotions} from './promotions';
 import {leaders} from './leaders';
 import {favorites} from './favorites';
+import {user} from './user';
 import {persistStore, persistCombineReducers} from 'redux-persist';
 import AsyncStorage from '@react-native-community/async-storage';
 const config = {
@@ -21,6 +22,7 @@ export const ConfigureStore = () => {
       promotions,
       leaders,
       favorites,
+      user,
     }),
     applyMiddleware(thunk, logger),
   );

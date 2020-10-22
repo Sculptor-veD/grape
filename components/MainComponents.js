@@ -1,18 +1,50 @@
 import * as React from 'react';
-import {Text, StyleSheet, StatusBar} from 'react-native';
-import {useState, useEffect} from 'react';
-//import RecipesComponents from './RecipesComponents';
-import {createAppContainer} from 'react-navigation';
+import {
+  SafeAreaView,
+  ScrollView,
+  View,
+  Image,
+  Text,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import {useEffect} from 'react';
+import {createAppContainer, createSwitchNavigator} from 'react-navigation';
 import {createStackNavigator} from 'react-navigation-stack';
-import {createDrawerNavigator} from 'react-navigation-drawer';
+import {createDrawerNavigator, DrawerItems} from 'react-navigation-drawer';
 import {Icon} from 'react-native-elements';
 import Recipes from './RecipesComponents';
 import RecipesDetails from './RecipesDetailsComponents';
 import Favorites from './FavoritesComponents';
-import {fetchDishes} from './redux/ActionCreators';
-import {useDispatch} from 'react-redux';
 import Login from './LoginComponents';
 import Register from './RegisterComponents';
+function LogOutScreen({navigation}) {
+  useEffect(() => {
+    navigation.navigate('Authen');
+  });
+  return <View />;
+}
+const CustomDrawerContentComponent = (props) => (
+  <ScrollView>
+    <SafeAreaView
+      style={styles.container}
+      forceInset={{top: 'always', horizontal: 'never'}}>
+      <View style={styles.drawerHeader}>
+        <View style={{flex: 1}}>
+          <Image
+            source={require('../asset/mango.png')}
+            style={styles.drawerImage}
+          />
+        </View>
+        <View style={{flex: 2}}>
+          <Text style={styles.drawerHeaderText}>Ristorante Con Fusion</Text>
+        </View>
+      </View>
+      <DrawerItems {...props} />
+    </SafeAreaView>
+  </ScrollView>
+);
 const RecipesStack = createStackNavigator(
   {
     Recipes: {
@@ -26,73 +58,80 @@ const RecipesStack = createStackNavigator(
     initialRouteName: 'Recipes',
   },
 );
-const AuthenticationStack = createStackNavigator({
-  loginScreen: {
-    screen: Login,
+const AuthenticationStack = createStackNavigator(
+  {
+    loginScreen: {
+      screen: Login,
+    },
+    registerScreen: {
+      screen: Register,
+    },
   },
-  registerScreen: {
-    screen: Register,
-  },
-});
+  {headerMode: true},
+);
 const FavoritesStack = createStackNavigator({
   favScreen: {
     screen: Favorites,
   },
 });
-const Drawer = createDrawerNavigator({
-  screen1: {
-    screen: RecipesStack,
-  },
-  favScreen: {
-    screen: FavoritesStack,
-  },
-});
-const MainStack = createStackNavigator(
+const Drawer = createDrawerNavigator(
   {
-    Authen: {
-      screen: AuthenticationStack,
-      navigationOptions: () => ({
-        headerTransparent: true,
-        headerTitle: '',
-      }),
+    screen1: {
+      screen: RecipesStack,
+      navigationOptions: {
+        drawerLabel: 'Home',
+      },
     },
-    Drawer: {
-      screen: Drawer,
-      navigationOptions: () => ({
-        headerTransparent: true,
-        headerTitle: '',
-      }),
+    favScreen: {
+      screen: FavoritesStack,
+      navigationOptions: {
+        drawerLabel: 'Favorites',
+        drawerIcon: ({tintColor, focused}) => (
+          <Icon name="list" type="font-awesome" size={24} color={tintColor} />
+        ),
+      },
+    },
+    logOutBtn: {
+      screen: LogOutScreen,
+      navigationOptions: {
+        drawerLabel: 'Logout',
+      },
     },
   },
-  {initialRouteName: 'Authen'},
+  {contentComponent: CustomDrawerContentComponent},
+);
+const MainStack = createSwitchNavigator(
+  {
+    Authen: AuthenticationStack,
+    App: Drawer,
+  },
+  {initialRouteName: 'Authen', headerMode: true},
 );
 const AppContainter = createAppContainer(MainStack);
 function Main() {
-  const [didMount, setDidMount] = useState(false);
-  const dispatch = useDispatch();
-  useEffect(() => {
-    setDidMount(true);
-    async function loadRecipes() {
-      await dispatch(fetchDishes());
-    }
-    loadRecipes();
-  }, [dispatch]);
-  if (!didMount) {
-    return null;
-  } else {
-    return <AppContainter />;
-  }
+  return <AppContainter />;
 }
-
 const styles = StyleSheet.create({
-  headerStyle: {
-    paddingTop: StatusBar.currentHeight,
-    color: 'white',
+  container: {
+    flex: 1,
   },
-  icon: {
-    paddingLeft: 30,
-    paddingTop: StatusBar.currentHeight,
+  drawerHeader: {
+    backgroundColor: '#512DA8',
+    height: 140,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    flexDirection: 'row',
+  },
+  drawerHeaderText: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  drawerImage: {
+    margin: 10,
+    width: 80,
+    height: 60,
   },
 });
-
 export default Main;

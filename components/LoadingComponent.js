@@ -14,7 +14,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export const Loading = () => {
+export const Loading = ({navigation}) => {
+
   return (
     <View style={styles.loadingView}>
       <ActivityIndicator size="large" color="#512DA8" />

@@ -14,3 +14,5 @@ export const ADD_FAVORITE = 'ADD_FAVORITE';
 export const ADD_COMMENT = 'ADD_COMMENT';
 export const ADD_NEWFAVORITE = 'ADD_NEWFAVORITE';
 export const REMOVE_FAVORITE = 'REMOVE_FAVORITE';
+export const ADD_USER = 'ADD_USER';
+export const USER_LOADING = 'USER_LOADING';

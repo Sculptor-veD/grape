@@ -8,8 +8,6 @@ export const favorites = (state = [], action) => {
     case ActionTypes.ADD_NEWFAVORITE:
       return [...state, action.payload];
     case ActionTypes.REMOVE_FAVORITE:
-      // state.splice(state.indexOf(action.payload), 1);
-      // return state;
       return state.filter((favorite) => favorite !== action.payload);
     default:
       return state;
