@@ -19,9 +19,56 @@ import RecipesDetails from './RecipesDetailsComponents';
 import Favorites from './FavoritesComponents';
 import Login from './LoginComponents';
 import Register from './RegisterComponents';
-function LogOutScreen({navigation}) {
+import {createBottomTabNavigator, BottomTabBar} from 'react-navigation-tabs';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import FloatBtn from './TabBarFloatBtn';
+const TabScreens = createBottomTabNavigator(
+  {
+    Recipes: {
+      screen: Recipes,
+      navigationOptions: () => ({
+        title: 'Home',
+        tabBarIcon: () => <Icon name="heart" type="font-awesome" size={24} />,
+      }),
+    },
+    AddBtn: {
+      screen: Favorites,
+      navigationOptions: () => ({
+        title: '',
+        tabBarIcon: () => <FloatBtn bgColor={'#fff'} />,
+      }),
+    },
+    Favorites: {
+      screen: Favorites,
+      navigationOptions: () => ({
+        title: 'Favorties',
+        tabBarIcon: ({tintColor, focused}) => (
+          <Icon name="heart" type="font-awesome" size={24} color={tintColor} />
+        ),
+      }),
+    },
+  },
+  {
+    tabBarOptions: {
+      style: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        backgroundColor: 'transparent',
+        borderTopWidth: 0,
+        height: 60,
+      },
+      tabStyle: {
+        backgroundColor: 'transparent',
+      },
+    },
+  },
+);
+function LogOutScreen({route, navigation}) {
   useEffect(() => {
-    navigation.navigate('Authen');
+    const {user} = route.params;
+    console.log(user);
+    // navigation.navigate('Authen');
   });
   return <View />;
 }
@@ -77,7 +124,7 @@ const FavoritesStack = createStackNavigator({
 const Drawer = createDrawerNavigator(
   {
     screen1: {
-      screen: RecipesStack,
+      screen: TabScreens,
       navigationOptions: {
         drawerLabel: 'Home',
       },
@@ -132,6 +179,11 @@ const styles = StyleSheet.create({
     margin: 10,
     width: 80,
     height: 60,
+  },
+  navigator: {
+    borderTopWidth: 0,
+    backgroundColor: 'transparent',
+    elevation: 30,
   },
 });
 export default Main;

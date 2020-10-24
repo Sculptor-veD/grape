@@ -220,18 +220,52 @@ export const postUser = (userName, password, email) => (dispatch) => {
     name: email,
   };
   console.log('user', user);
-  fetch(baseUrl + '/Account/createAccount', {
+  fetch(baseUrl + 'Account/createAccount', {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
     method: 'POST',
-    body: user,
+    body: JSON.stringify({
+      username: userName,
+      pwd: password,
+      name: email,
+    }),
   })
     .then((res) => res.json())
     .then((json) => console.log('postUser', json))
     .then(() => dispatch(addNewuser(user)));
 };
+export const postLoginUser = (userName, password) => (dispatch) => {
+  dispatch(userLoading);
+  fetch(baseUrl + 'auth/Login', {
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+    body: JSON.stringify({
+      username: userName,
+      pwd: password,
+    }),
+  })
+    .then((res) => res.json())
+    .then((json) => dispatch(addNewuser(json.data)));
+};
+export const postLogout = (token) => (dispatch) => {
+  fetch(baseUrl + 'auth/Logout', {
+    header: {
+      token: token,
+    },
+  })
+    .then((res) => res.json())
+    .then((json) => {
+      if (json.status === 1) dispatch(userLogout());
+    });
+};
+export const userLogout = () => ({
+  type: ActionTypes.USER_LOGOUT,
+});
 export const userLoading = () => ({
   type: ActionTypes.USER_LOADING,
 });

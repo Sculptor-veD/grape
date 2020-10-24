@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {useState} from 'react';
 import {
   Text,
   View,
@@ -6,22 +7,44 @@ import {
   Image,
   StatusBar,
   ImageBackground,
+  ScrollView,
+  SafeAreaView,
+  Modal,
+  Dimensions,
 } from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
-import {Icon} from 'react-native-elements';
+import {Icon, Card} from 'react-native-elements';
 import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
 import {
   postComment,
   postNewFavorite,
   removeFavorite,
 } from './redux/ActionCreators';
+const {width, height} = Dimensions.get('window');
 
+function Comments({data}) {
+  return (
+    <View style={{flex: 1}}>
+      <FlatList
+        data={data}
+        keyExtractor={(item) => item.id.toString()}
+        renderItems={({item}) => (
+          <View>
+            {console.log(item)}
+            <Text>{item.comments[0].comments}</Text>
+          </View>
+        )}
+      />
+    </View>
+  );
+}
 function RenderRecipe(props) {
   const data = props.data;
   return (
     <View style={styles.container}>
-      <StatusBar hidden />
-      <Image style={styles.img} source={{uri: data.imgs[0]}} />
+      <View style={{flex: 1}}>
+        <Image style={styles.img} source={{uri: data.imgs[0]}} />
+      </View>
       <View style={styles.detailsView}>
         <View style={styles.contentDetails}>
           <Text style={styles.descriptionText}>{data.name}</Text>
@@ -32,14 +55,16 @@ function RenderRecipe(props) {
                 name={props.favorite ? 'heart' : 'heart-o'}
                 type="font-awesome"
                 size={50}
-                color="#FFE9B8"
+                color="red"
                 onPress={() =>
                   props.favorite ? props.onRemove() : props.onPress()
                 }
               />
             </View>
             <View>
-              <TouchableOpacity style={styles.viewCommentBtn}>
+              <TouchableOpacity
+                style={styles.viewCommentBtn}
+                onPress={() => props.openModal()}>
                 <Text style={{fontWeight: 'bold'}}>View Comments</Text>
               </TouchableOpacity>
             </View>
@@ -53,7 +78,10 @@ function RenderRecipe(props) {
 function RecipesDetails({navigation}) {
   const dishId = navigation.getParam('dishId', '');
   const data = useSelector((state) => state.dishes.dishes);
+  const comments = data.filter((dish) => dish.id === dishId)[0];
   const favorites = useSelector((state) => state.favorites);
+  const commentsData = comments.comments;
+  const [modalVisible, setModalVisible] = useState(false);
   const dispatch = useDispatch();
   const dispatchNewFavorite = () => dispatch(postNewFavorite(dishId));
   const dispatchRemoveFavorite = () => dispatch(removeFavorite(dishId));
@@ -66,12 +94,52 @@ function RecipesDetails({navigation}) {
     console.log(dishId, favorites);
   }
   return (
-    <RenderRecipe
-      data={data.filter((dish) => dish.id === dishId)[0]}
-      favorite={favorites.some((el) => el === dishId)}
-      onPress={() => markFavorite(dishId)}
-      onRemove={() => deleteFavorite(dishId)}
-    />
+    <SafeAreaView style={{flex: 1}}>
+      <StatusBar hidden />
+      <ScrollView scrollEventThrottle={16}>
+        <RenderRecipe
+          data={data.filter((dish) => dish.id === dishId)[0]}
+          favorite={favorites.some((el) => el === dishId)}
+          onPress={() => markFavorite(dishId)}
+          onRemove={() => deleteFavorite(dishId)}
+          openModal={() => setModalVisible(true)}
+        />
+        <View style={styles.centeredView}>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+              setModalVisible(false);
+            }}>
+            <View style={{backgroundColor: 'red', flex: 1 / 2}}>
+              <View style={styles.modalView}>
+                <FlatList
+                  data={comments.comments}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({item}) => (
+                    <View>
+                      <Text>{item.comment}</Text>
+                    </View>
+                  )}
+                />
+              </View>
+            </View>
+          </Modal>
+        </View>
+        <View style={{height: height}}>
+          <Card>
+            <Card.Title>Comments</Card.Title>
+            <Card.Divider />
+            {commentsData.map((item, index) => (
+              <View key={index}>
+                <Text>{`${item.comment} ${index} `}</Text>
+              </View>
+            ))}
+          </Card>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 RecipesDetails.navigationOptions = () => ({
@@ -81,6 +149,7 @@ RecipesDetails.navigationOptions = () => ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    height: height * 1.1,
   },
   detailsView: {
     backgroundColor: '#fff',
@@ -95,7 +164,7 @@ const styles = StyleSheet.create({
   img: {
     backgroundColor: '#FFE9B8',
     width: '100%',
-    height: '50%',
+    height: '100%',
     resizeMode: 'cover',
     borderRadius: 24,
   },
@@ -142,6 +211,41 @@ const styles = StyleSheet.create({
   },
   review: {
     flex: 1 / 2,
+  },
+  centeredView: {
+    flex: 1,
+  },
+  modalView: {
+    flex: 1,
+    width: '100%',
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  openButton: {
+    backgroundColor: '#F194FF',
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
   },
 });
 export default RecipesDetails;

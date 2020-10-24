@@ -12,6 +12,7 @@ import {
 import {baseUrl} from '../shared/baseUrl';
 import {postUser} from './redux/ActionCreators';
 import {connect} from 'react-redux';
+import {Loading} from './LoadingComponent';
 class Register extends React.Component {
   constructor(props) {
     super(props);
@@ -72,61 +73,65 @@ class Register extends React.Component {
     //   Alert.alert('Validation error', err);
     //   return;
     // }
-    this.props.postUser(
+    await this.props.postUser(
       this.state.userName,
       this.state.password,
       this.state.email,
     );
+    await this.props.navigation.navigate('loginScreen');
   };
   render() {
-    return (
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.inner}>
-          <View style={styles.headerColor}>
-            <Text style={styles.headerText}>Register</Text>
+    if (this.props.user.isLoading) return <Loading />;
+    else {
+      return (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.inner}>
+            <View style={styles.headerColor}>
+              <Text style={styles.headerText}>Register</Text>
+            </View>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Username</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Username"
+                underlineColorAndroid="grey"
+                onChangeText={(text) => this.handleUsername(text)}
+                value={this.state.userName}
+              />
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Email"
+                underlineColorAndroid="grey"
+                onChangeText={(text) => this.handleEmail(text)}
+                value={this.state.email}
+              />
+              {console.log(this.props.user, 'suser')}
+              <Text style={styles.label}>Password</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Password"
+                underlineColorAndroid="grey"
+                onChangeText={(text) => this.handlePassword(text)}
+                value={this.state.password}
+                textContentType="password"
+                secureTextEntry={true}
+              />
+              <Text
+                style={styles.register}
+                onPress={() => this.props.navigation.navigate('loginScreen')}>
+                Already have an account? Login
+              </Text>
+              <TouchableOpacity
+                style={styles.loginBtn}
+                onPress={this.handleRegister}>
+                <Text style={styles.loginBtnLabel}>REGISTER</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Username</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Username"
-              underlineColorAndroid="grey"
-              onChangeText={(text) => this.handleUsername(text)}
-              value={this.state.userName}
-            />
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Email"
-              underlineColorAndroid="grey"
-              onChangeText={(text) => this.handleEmail(text)}
-              value={this.state.email}
-            />
-            {console.log(this.props.user, 'suser')}
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Password"
-              underlineColorAndroid="grey"
-              onChangeText={(text) => this.handlePassword(text)}
-              value={this.state.password}
-              textContentType="password"
-              secureTextEntry={true}
-            />
-            <Text
-              style={styles.register}
-              onPress={() => this.props.navigation.navigate('loginScreen')}>
-              Already have an account? Login
-            </Text>
-            <TouchableOpacity
-              style={styles.loginBtn}
-              onPress={this.handleRegister}>
-              <Text style={styles.loginBtnLabel}>REGISTER</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </TouchableWithoutFeedback>
-    );
+        </TouchableWithoutFeedback>
+      );
+    }
   }
 }
 
@@ -189,6 +194,6 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(postUser(username, password, email)),
 });
 const mapStateToProps = (state) => ({
-  user: state.user.user,
+  user: state.user,
 });
 export default connect(mapStateToProps, mapDispatchToProps)(Register);

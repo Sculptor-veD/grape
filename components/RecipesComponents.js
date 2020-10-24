@@ -225,9 +225,9 @@ const styles = StyleSheet.create({
     width: width * 0.74,
   },
   imgs: {
-    width: '95%',
-    height: width * 0.74,
-    resizeMode: 'stretch',
+    width: '100%',
+    height: width * 0.54,
+    resizeMode: 'cover',
     borderRadius: 2,
     margin: 0,
     marginBottom: 10,
