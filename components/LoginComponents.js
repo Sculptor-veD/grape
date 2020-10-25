@@ -5,16 +5,13 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert,
-  Dimensions,
 } from 'react-native';
 import {useState} from 'react';
-import {StackActions, NavigationActions} from 'react-navigation';
-import AsyncStorage from '@react-native-community/async-storage';
+import {StackActions, CommonActions} from '@react-navigation/native';
 import {useSelector, useDispatch} from 'react-redux';
 import {postLoginUser} from './redux/ActionCreators';
 import {Loading} from './LoadingComponent';
-const {width, height} = Dimensions.get('window');
+
 function Login({navigation}) {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
@@ -23,7 +20,14 @@ function Login({navigation}) {
   const isLoading = useSelector((state) => state.user.isLoading);
   useEffect(() => {
     const bootAsync = async () => {
-      if (user) navigation.navigate('App', {user: user});
+      if (user) {
+        navigation.navigate('Tab', {user: user});
+        const resetAction = CommonActions.reset({
+          index: 0,
+          routes: [{name: 'Tab', params: {user: user}}],
+        });
+        navigation.dispatch(resetAction);
+      }
     };
     bootAsync();
     console.log('user', user);
@@ -72,7 +76,7 @@ function Login({navigation}) {
     // }
     dispatch(postLoginUser(email, password));
   }
-  if (isLoading) return <Loading />;
+  if (user) return <Loading />;
   else {
     return (
       <View style={styles.container}>
@@ -110,7 +114,7 @@ function Login({navigation}) {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.loginAsGuest}
-            onPress={() => navigation.navigate('App')}>
+            onPress={() => navigation.navigate('Tab')}>
             <Text style={styles.loginBtnLabel}>LOGIN AS GUEST</Text>
           </TouchableOpacity>
         </View>

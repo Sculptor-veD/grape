@@ -131,17 +131,16 @@ function Recipes({navigation}) {
         <Backdrop data={data} scrollX={scrollX} />
         <View style={styles.header}>
           <Icon
-            name="pencil"
+            name="power-off"
             size={30}
-            type="ionicon"
-            color="white"
-            onPress={() => ToggleModal()}
+            type="font-awesome"
+            color="#fcf7f9"
           />
         </View>
 
         <StatusBar hidden />
         <Animated.FlatList
-          data={data.reverse()}
+          data={data}
           keyExtractor={(item, index) => item.id.toString()}
           horizontal
           //  snapToInterval={width * 0.74}

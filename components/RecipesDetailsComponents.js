@@ -75,8 +75,9 @@ function RenderRecipe(props) {
   );
 }
 
-function RecipesDetails({navigation}) {
-  const dishId = navigation.getParam('dishId', '');
+function RecipesDetails({navigation, route}) {
+  // const dishId = navigation.getParam('dishId', '');
+  const {dishId} = route.params;
   const data = useSelector((state) => state.dishes.dishes);
   const comments = data.filter((dish) => dish.id === dishId)[0];
   const favorites = useSelector((state) => state.favorites);

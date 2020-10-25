@@ -5,12 +5,12 @@ const {width, height} = Dimensions.get('window');
 const pathX = '620';
 const pathY = '935';
 const pathA = '950';
-const pathB = '986';
-export const TabBg = ({color = '#FFFFFF', ...props}) => {
+const pathB = '1200';
+export const TabBg = ({color = '#F2F2F2', ...props}) => {
   return (
-    <Svg width={width} height={60} viewBox={`0 0 1600  260`} {...props}>
+    <Svg width={80} height={60} viewBox={`0 0 80 61`} {...props}>
       <Path
-        d={`M30,60h${pathX}.3c17.2,0,31,14.4,30,31.6c-0.2,2.7-0.3,5.5-0.3,8.2c0,71.2,58.1,129.6,129.4,130c72.1,0.3,130.6-58,130.6-130c0-2.7-0.1-5.4-0.2-8.1C${pathY}.7,74.5,${pathA}.5,60,${pathB}.7,60H2062c16.6,0,30,13.4,30,30v94c0,42-34,76-76,76H76c-42,0-76-34-76-76V90C0,73.4,13.4,60,30,60z`}
+        d="M80.2 0v61H0V0c4.1 0 7.4 3.1 7.9 7.1C10 21.7 22.5 33 37.7 33c15.2 0 27.7-11.3 29.7-25.9.5-4 3.9-7.1 7.9-7.1h-.1z"
         fill={color}
       />
     </Svg>

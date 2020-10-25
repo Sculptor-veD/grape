@@ -15,7 +15,7 @@ export default function FloatBtn(props) {
 }
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
+    position: 'relative',
     width: 75,
     alignItems: 'center',
   },
@@ -24,11 +24,11 @@ const styles = StyleSheet.create({
     top: 0,
   },
   button: {
-    top: -8.5,
-    right: -2,
+    top: -22.5,
     justifyContent: 'center',
     alignItems: 'center',
     width: 50,
+    left: -2,
     height: 50,
     borderRadius: 27,
     backgroundColor: '#E94F37',

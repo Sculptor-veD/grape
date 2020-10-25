@@ -1,162 +1,105 @@
-import * as React from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  View,
-  Image,
-  Text,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-import {useEffect} from 'react';
-import {createAppContainer, createSwitchNavigator} from 'react-navigation';
-import {createStackNavigator} from 'react-navigation-stack';
-import {createDrawerNavigator, DrawerItems} from 'react-navigation-drawer';
-import {Icon} from 'react-native-elements';
+import React, {useEffect} from 'react';
+import {View, StyleSheet} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
 import Recipes from './RecipesComponents';
 import RecipesDetails from './RecipesDetailsComponents';
 import Favorites from './FavoritesComponents';
+import FloatBtn from './TabBarFloatBtn';
+import {Icon} from 'react-native-elements';
+import {createStackNavigator} from '@react-navigation/stack';
 import Login from './LoginComponents';
 import Register from './RegisterComponents';
-import {createBottomTabNavigator, BottomTabBar} from 'react-navigation-tabs';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import FloatBtn from './TabBarFloatBtn';
-const TabScreens = createBottomTabNavigator(
-  {
-    Recipes: {
-      screen: Recipes,
-      navigationOptions: () => ({
-        title: 'Home',
-        tabBarIcon: () => <Icon name="heart" type="font-awesome" size={24} />,
-      }),
-    },
-    AddBtn: {
-      screen: Favorites,
-      navigationOptions: () => ({
-        title: '',
-        tabBarIcon: () => <FloatBtn bgColor={'#fff'} />,
-      }),
-    },
-    Favorites: {
-      screen: Favorites,
-      navigationOptions: () => ({
-        title: 'Favorties',
-        tabBarIcon: ({tintColor, focused}) => (
-          <Icon name="heart" type="font-awesome" size={24} color={tintColor} />
-        ),
-      }),
-    },
-  },
-  {
-    tabBarOptions: {
-      style: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        backgroundColor: 'transparent',
-        borderTopWidth: 0,
-        height: 60,
-      },
-      tabStyle: {
-        backgroundColor: 'transparent',
-      },
-    },
-  },
-);
-function LogOutScreen({route, navigation}) {
-  useEffect(() => {
-    const {user} = route.params;
-    console.log(user);
-    // navigation.navigate('Authen');
-  });
-  return <View />;
+import {useSelector} from 'react-redux';
+import {
+  createBottomTabNavigator,
+  BottomTabBar,
+} from '@react-navigation/bottom-tabs';
+const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+function AuthStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="loginScreen"
+        component={Login}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="registerScreen"
+        component={Register}
+        options={{headerShown: false}}
+      />
+    </Stack.Navigator>
+  );
 }
-const CustomDrawerContentComponent = (props) => (
-  <ScrollView>
-    <SafeAreaView
-      style={styles.container}
-      forceInset={{top: 'always', horizontal: 'never'}}>
-      <View style={styles.drawerHeader}>
-        <View style={{flex: 1}}>
-          <Image
-            source={require('../asset/mango.png')}
-            style={styles.drawerImage}
-          />
+
+function MyTabsApp() {
+  return (
+    <Tab.Navigator
+      tabBar={(props) => (
+        <View style={styles.navigatorContainer}>
+          <BottomTabBar {...props} />
         </View>
-        <View style={{flex: 2}}>
-          <Text style={styles.drawerHeaderText}>Ristorante Con Fusion</Text>
-        </View>
-      </View>
-      <DrawerItems {...props} />
-    </SafeAreaView>
-  </ScrollView>
-);
-const RecipesStack = createStackNavigator(
-  {
-    Recipes: {
-      screen: Recipes,
-    },
-    RecipesDetails: {
-      screen: RecipesDetails,
-    },
-  },
-  {
-    initialRouteName: 'Recipes',
-  },
-);
-const AuthenticationStack = createStackNavigator(
-  {
-    loginScreen: {
-      screen: Login,
-    },
-    registerScreen: {
-      screen: Register,
-    },
-  },
-  {headerMode: true},
-);
-const FavoritesStack = createStackNavigator({
-  favScreen: {
-    screen: Favorites,
-  },
-});
-const Drawer = createDrawerNavigator(
-  {
-    screen1: {
-      screen: TabScreens,
-      navigationOptions: {
-        drawerLabel: 'Home',
-      },
-    },
-    favScreen: {
-      screen: FavoritesStack,
-      navigationOptions: {
-        drawerLabel: 'Favorites',
-        drawerIcon: ({tintColor, focused}) => (
-          <Icon name="list" type="font-awesome" size={24} color={tintColor} />
-        ),
-      },
-    },
-    logOutBtn: {
-      screen: LogOutScreen,
-      navigationOptions: {
-        drawerLabel: 'Logout',
-      },
-    },
-  },
-  {contentComponent: CustomDrawerContentComponent},
-);
-const MainStack = createSwitchNavigator(
-  {
-    Authen: AuthenticationStack,
-    App: Drawer,
-  },
-  {initialRouteName: 'Authen', headerMode: true},
-);
-const AppContainter = createAppContainer(MainStack);
-function Main() {
-  return <AppContainter />;
+      )}
+      tabBarOptions={{
+        showIcon: true,
+        style: styles.navigator,
+        tabStyle: {
+          backgroundColor: '#F2F2F2',
+          borderWidth: 0,
+        },
+      }}>
+      <Tab.Screen
+        name="Home"
+        component={Recipes}
+        options={{
+          tabBarIcon: () => (
+            <Icon name="home" type="ionicon" size={24} color={'#aaa'} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Home2"
+        component={Recipes}
+        options={{tabBarButton: (props) => <FloatBtn {...props} />}}
+      />
+      <Tab.Screen
+        name="Favorites"
+        component={Favorites}
+        options={{
+          tabBarIcon: () => (
+            <Icon name="heart" type="ionicon" size={24} color={'#aaa'} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
+export default function RootStack() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="Authen"
+          component={AuthStack}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="Tab"
+          component={MyTabsApp}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="RecipesDetails"
+          component={RecipesDetails}
+          options={{
+            headerTransparent: true,
+            title: '',
+          }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
 }
 const styles = StyleSheet.create({
   container: {
@@ -185,5 +128,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     elevation: 30,
   },
+  navigatorContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+  },
 });
-export default Main;
