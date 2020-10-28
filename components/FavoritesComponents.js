@@ -1,6 +1,6 @@
 import React from 'react';
 import {FlatList, View, Text} from 'react-native';
-import {ListItem, Avatar} from 'react-native-elements';
+import {ListItem} from 'react-native-elements';
 import {connect, useSelector} from 'react-redux';
 import {Loading} from './LoadingComponent';
 

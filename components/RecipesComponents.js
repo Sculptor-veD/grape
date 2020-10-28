@@ -18,7 +18,7 @@ import {Rating, Icon, Card} from 'react-native-elements';
 import MaskedView from '@react-native-community/masked-view';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import {useSelector, useDispatch} from 'react-redux';
-import {fetchDishes} from './redux/ActionCreators';
+import {fetchDishes, userLogout} from './redux/ActionCreators';
 import AsyncStorage from '@react-native-community/async-storage';
 
 const {width, height} = Dimensions.get('window');
@@ -41,25 +41,6 @@ const Backdrop = ({data, scrollX}) => {
             'https://img.freepik.com/free-photo/slice-delicious-pizza-with-ingredients-textured-wooden-background_23-2147926094.jpg?size=626&ext=jpg',
         }}
       />
-      <FlatList
-        data={data}
-        keyExtractor={(item) => item.id.toString() + '-backdrop'}
-        contentContainerStyle={{width, height: BACKDROP_HEIGHT}}
-        renderItem={({item, index}) => {
-          const translateX = scrollX.interpolate({
-            inputRange: [index * ITEM_SIZE, (index + 1) * ITEM_SIZE],
-            outputRange: [0, width],
-            // extrapolate: 'clamp',
-          });
-          return (
-            <MaskedView
-              //  style={{flex: 1, position: 'absolute'}}
-              maskElement={
-                <Image style={styles.imgs} source={{uri: item.imgs[0]}} />
-              }></MaskedView>
-          );
-        }}
-      />
     </View>
   );
 };
@@ -68,9 +49,6 @@ function Recipes({navigation}) {
   const data = useSelector((state) => state.dishes.dishes);
   const isLoading = useSelector((state) => state.dishes.isLoading);
   const [modalVisible, setModalVisible] = useState(false);
-  const ToggleModal = () => {
-    setModalVisible(!modalVisible);
-  };
   const dispatch = useDispatch();
   useEffect(() => {
     async function loadRecipes() {
@@ -135,6 +113,27 @@ function Recipes({navigation}) {
             size={30}
             type="font-awesome"
             color="#fcf7f9"
+            onPress={() => {
+              Alert.alert(
+                'Sign out',
+                'Do you want to sign out ? ',
+                [
+                  {
+                    text: 'Cancel',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      dispatch(userLogout());
+                      navigation.navigate('Authen');
+                    },
+                  },
+                ],
+                {cancelable: false},
+              );
+            }}
           />
         </View>
 
@@ -143,7 +142,6 @@ function Recipes({navigation}) {
           data={data}
           keyExtractor={(item, index) => item.id.toString()}
           horizontal
-          //  snapToInterval={width * 0.74}
           bounces={false}
           contentContainerStyle={{alignItems: 'center'}}
           onScroll={Animated.event(

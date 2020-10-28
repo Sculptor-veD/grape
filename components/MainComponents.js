@@ -9,7 +9,7 @@ import {Icon} from 'react-native-elements';
 import {createStackNavigator} from '@react-navigation/stack';
 import Login from './LoginComponents';
 import Register from './RegisterComponents';
-import {useSelector} from 'react-redux';
+import NewRecipeComponents from './NewRecipeComponents';
 import {
   createBottomTabNavigator,
   BottomTabBar,
@@ -59,8 +59,8 @@ function MyTabsApp() {
         }}
       />
       <Tab.Screen
-        name="Home2"
-        component={Recipes}
+        name="AddNewRecipe"
+        component={NewRecipeComponents}
         options={{tabBarButton: (props) => <FloatBtn {...props} />}}
       />
       <Tab.Screen

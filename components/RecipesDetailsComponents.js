@@ -11,10 +11,14 @@ import {
   SafeAreaView,
   Modal,
   Dimensions,
+  Button,
+  Animated,
 } from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
 import {Icon, Card} from 'react-native-elements';
 import {FlatList, TouchableOpacity} from 'react-native-gesture-handler';
+import {useScrollToTop} from '@react-navigation/native';
+
 import {
   postComment,
   postNewFavorite,
@@ -40,6 +44,7 @@ function Comments({data}) {
 }
 function RenderRecipe(props) {
   const data = props.data;
+
   return (
     <View style={styles.container}>
       <View style={{flex: 1}}>
@@ -64,7 +69,8 @@ function RenderRecipe(props) {
             <View>
               <TouchableOpacity
                 style={styles.viewCommentBtn}
-                onPress={() => props.openModal()}>
+                // onPress={() => props.openModal()}
+              >
                 <Text style={{fontWeight: 'bold'}}>View Comments</Text>
               </TouchableOpacity>
             </View>
@@ -76,7 +82,6 @@ function RenderRecipe(props) {
 }
 
 function RecipesDetails({navigation, route}) {
-  // const dishId = navigation.getParam('dishId', '');
   const {dishId} = route.params;
   const data = useSelector((state) => state.dishes.dishes);
   const comments = data.filter((dish) => dish.id === dishId)[0];
@@ -97,14 +102,14 @@ function RecipesDetails({navigation, route}) {
   return (
     <SafeAreaView style={{flex: 1}}>
       <StatusBar hidden />
-      <ScrollView scrollEventThrottle={16}>
+      <Animated.ScrollView scrollEventThrottle={16}>
         <RenderRecipe
           data={data.filter((dish) => dish.id === dishId)[0]}
           favorite={favorites.some((el) => el === dishId)}
           onPress={() => markFavorite(dishId)}
           onRemove={() => deleteFavorite(dishId)}
-          openModal={() => setModalVisible(true)}
         />
+
         <View style={styles.centeredView}>
           <Modal
             animationType="slide"
@@ -139,7 +144,7 @@ function RecipesDetails({navigation, route}) {
             ))}
           </Card>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
     </SafeAreaView>
   );
 }

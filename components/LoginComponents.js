@@ -18,19 +18,24 @@ function Login({navigation}) {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
   const isLoading = useSelector((state) => state.user.isLoading);
+  function isRealValue(obj) {
+    return obj && obj !== 'null' && obj !== 'undefined';
+  }
   useEffect(() => {
     const bootAsync = async () => {
-      if (user) {
+      console.log(user);
+      if (isRealValue(user)) {
         navigation.navigate('Tab', {user: user});
         const resetAction = CommonActions.reset({
           index: 0,
           routes: [{name: 'Tab', params: {user: user}}],
         });
         navigation.dispatch(resetAction);
+      } else {
+        return false;
       }
     };
     bootAsync();
-    console.log('user', user);
   }, [navigation, user]);
   function handleEmail(text) {
     setEmail(text);
@@ -76,7 +81,7 @@ function Login({navigation}) {
     // }
     dispatch(postLoginUser(email, password));
   }
-  if (user) return <Loading />;
+  if (user === '') return <Loading />;
   else {
     return (
       <View style={styles.container}>

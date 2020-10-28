@@ -1,5 +1,5 @@
 import * as ActionTypes from './ActionTypes';
-import {baseUrl, GET_METHOD} from '../../shared/baseUrl';
+import {baseUrl} from '../../shared/baseUrl';
 export const fetchComments = () => (dispatch) => {
   return fetch(baseUrl + 'comments')
     .then(
