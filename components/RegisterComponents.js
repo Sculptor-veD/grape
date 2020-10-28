@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import {baseUrl} from '../shared/baseUrl';
-import {postUser} from './redux/ActionCreators';
+import {postUser, userFailed} from './redux/ActionCreators';
 import {connect} from 'react-redux';
 import {Loading} from './LoadingComponent';
 class Register extends React.Component {
@@ -60,26 +60,80 @@ class Register extends React.Component {
     }
     return null;
   };
-  handleRegister = async () => {
+  handleRegister = () => {
     //validation
     // const err =
     //   this.userNameError() || this.passwordError() || this.emailError();
     // const errorFullnull =
     //   this.userNameError() && this.passwordError() && this.emailError();
-    // if (errorFullnull !== null) {
-    //   Alert.alert('You must fill out something!');
-    //   return;
+    // if (erro ,rFullnull !== null) {
+    //   Aler
     // } else if (err) {
     //   Alert.alert('Validation error', err);
     //   return;
     // }
-    await this.props.postUser(
+    // () =>
+    //     Alert.alert(
+    //       'Alert Title',
+    //       `${this.props.user.errMess}`,
+    //       [
+    //         {
+    //           text: 'Cancel',
+    //           onPress: () => console.log('Cancel Pressed'),
+    //           style: 'cancel',
+    //         },
+    //         {text: 'OK', onPress: () => console.log('OK Pressed')},
+    //       ],
+    //       {cancelable: false},
+    //     ),
+    console.log(this.props.user.isLoading);
+    this.props.postUser(
       this.state.userName,
       this.state.password,
       this.state.email,
+      (json) => {
+        if (json.status === 1)
+          return Alert.alert(
+            'Success',
+            'Sign up successful',
+            [
+              {
+                text: 'Cancel',
+                onPress: () => console.log('Cancel Pressed'),
+                style: 'cancel',
+              },
+              {
+                text: 'OK',
+                onPress: () => this.props.navigation.navigate('loginScreen'),
+              },
+            ],
+            {cancelable: false},
+          );
+        else {
+          const error = 'Error ' + json.description;
+
+          return Alert.alert(
+            'Error',
+            `${error}`,
+            [
+              {
+                text: 'Cancel',
+                onPress: () => console.log('Cancel Pressed'),
+                style: 'cancel',
+              },
+              {text: 'OK', onPress: () => console.log('OK Pressed')},
+            ],
+            {cancelable: false},
+          );
+        }
+      },
+      (error) => {
+        var errmess = new Error(error.message);
+        throw errmess;
+      },
     );
-    await this.props.navigation.navigate('loginScreen');
   };
+
   render() {
     if (this.props.user.isLoading) return <Loading />;
     else {
@@ -97,6 +151,7 @@ class Register extends React.Component {
                 underlineColorAndroid="grey"
                 onChangeText={(text) => this.handleUsername(text)}
                 value={this.state.userName}
+                autoCapitalize="none"
               />
               <Text style={styles.label}>Email</Text>
               <TextInput
@@ -105,8 +160,8 @@ class Register extends React.Component {
                 underlineColorAndroid="grey"
                 onChangeText={(text) => this.handleEmail(text)}
                 value={this.state.email}
+                autoCapitalize="none"
               />
-              {console.log(this.props.user, 'suser')}
               <Text style={styles.label}>Password</Text>
               <TextInput
                 style={styles.textInput}
@@ -116,6 +171,7 @@ class Register extends React.Component {
                 value={this.state.password}
                 textContentType="password"
                 secureTextEntry={true}
+                autoCapitalize="none"
               />
               <Text
                 style={styles.register}
@@ -124,7 +180,7 @@ class Register extends React.Component {
               </Text>
               <TouchableOpacity
                 style={styles.loginBtn}
-                onPress={this.handleRegister}>
+                onPress={() => this.handleRegister()}>
                 <Text style={styles.loginBtnLabel}>REGISTER</Text>
               </TouchableOpacity>
             </View>
@@ -190,8 +246,9 @@ const styles = StyleSheet.create({
   },
 });
 const mapDispatchToProps = (dispatch) => ({
-  postUser: (username, password, email) =>
-    dispatch(postUser(username, password, email)),
+  postUser: (username, password, email, callback) =>
+    dispatch(postUser(username, password, email, callback)),
+  userFailed: (error) => dispatch(userFailed(error)),
 });
 const mapStateToProps = (state) => ({
   user: state.user,

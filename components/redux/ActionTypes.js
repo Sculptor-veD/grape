@@ -18,3 +18,4 @@ export const ADD_USER = 'ADD_USER';
 export const USER_LOADING = 'USER_LOADING';
 export const USER_LOGIN = 'USER_LOGIN';
 export const USER_LOGOUT = 'USER_LOGOUT';
+export const USER_FAILD = 'USER_FAILED';

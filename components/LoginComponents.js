@@ -5,9 +5,10 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {useState} from 'react';
-import {StackActions, CommonActions} from '@react-navigation/native';
+import {CommonActions} from '@react-navigation/native';
 import {useSelector, useDispatch} from 'react-redux';
 import {postLoginUser} from './redux/ActionCreators';
 import {Loading} from './LoadingComponent';
@@ -17,14 +18,11 @@ function Login({navigation}) {
   const [password, setPassword] = useState();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
+  const isSignIn = useSelector((state) => state.user.isSignIn);
   const isLoading = useSelector((state) => state.user.isLoading);
-  function isRealValue(obj) {
-    return obj && obj !== 'null' && obj !== 'undefined';
-  }
   useEffect(() => {
     const bootAsync = async () => {
-      console.log(user);
-      if (isRealValue(user)) {
+      if (isSignIn) {
         navigation.navigate('Tab', {user: user});
         const resetAction = CommonActions.reset({
           index: 0,
@@ -36,7 +34,7 @@ function Login({navigation}) {
       }
     };
     bootAsync();
-  }, [navigation, user]);
+  }, [navigation, isSignIn, user]);
   function handleEmail(text) {
     setEmail(text);
   }
@@ -79,9 +77,39 @@ function Login({navigation}) {
     //   Alert.alert('Validation error', err);
     //   return;
     // }
-    dispatch(postLoginUser(email, password));
+    dispatch(
+      postLoginUser(
+        email,
+        password,
+        (json) => {
+          if (json.status === 1) navigation.navigate('Tab');
+          else {
+            const error = 'Error ' + json.description;
+
+            return Alert.alert(
+              'Error',
+              `${error}`,
+              [
+                {
+                  text: 'Cancel',
+                  onPress: () => console.log('Cancel Pressed'),
+                  style: 'cancel',
+                },
+                {text: 'OK', onPress: () => console.log('OK Pressed')},
+              ],
+              {cancelable: false},
+            );
+          }
+        },
+        (error) => {
+          var errmess = new Error(error.message);
+          throw errmess;
+        },
+      ),
+    );
   }
-  if (user === '') return <Loading />;
+  if (isSignIn) return <Loading />;
+  else if (isLoading) return <Loading />;
   else {
     return (
       <View style={styles.container}>

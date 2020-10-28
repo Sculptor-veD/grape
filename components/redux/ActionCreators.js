@@ -212,14 +212,8 @@ export const addNewuser = (user) => ({
   payload: user,
 });
 
-export const postUser = (userName, password, email) => (dispatch) => {
+export const postUser = (userName, password, email, callback) => (dispatch) => {
   dispatch(userLoading());
-  const user = {
-    username: userName,
-    pwd: password,
-    name: email,
-  };
-  console.log('user', user);
   fetch(baseUrl + 'Account/createAccount', {
     headers: {
       Accept: 'application/json',
@@ -233,11 +227,15 @@ export const postUser = (userName, password, email) => (dispatch) => {
     }),
   })
     .then((res) => res.json())
-    .then((json) => console.log('postUser', json))
-    .then(() => dispatch(addNewuser(user)));
+    .then((json) => {
+      dispatch(userFailed('error'));
+      callback(json);
+    })
+
+    .catch((error) => dispatch(userFailed(error)));
 };
-export const postLoginUser = (userName, password) => (dispatch) => {
-  dispatch(userLoading);
+export const postLoginUser = (userName, password, callback) => (dispatch) => {
+  dispatch(userLoading());
   fetch(baseUrl + 'auth/Login', {
     headers: {
       Accept: 'application/json',
@@ -250,7 +248,11 @@ export const postLoginUser = (userName, password) => (dispatch) => {
     }),
   })
     .then((res) => res.json())
-    .then((json) => dispatch(addNewuser(json.data)));
+    .then((json) => {
+      dispatch(userFailed('error'));
+      callback(json);
+    })
+    .catch((error) => dispatch(userFailed(error)));
 };
 export const postLogout = (token) => (dispatch) => {
   fetch(baseUrl + 'auth/Logout', {
@@ -259,10 +261,12 @@ export const postLogout = (token) => (dispatch) => {
     },
   })
     .then((res) => res.json())
-    .then((json) => {
-      if (json.status === 1) dispatch(userLogout());
-    });
+    .then(() => dispatch(userLogout()));
 };
+export const userFailed = (error) => ({
+  type: ActionTypes.USER_FAILD,
+  payload: error,
+});
 export const userLogout = () => ({
   type: ActionTypes.USER_LOGOUT,
 });

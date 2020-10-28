@@ -8,7 +8,6 @@ import {
   TextInput,
   ImageBackground,
   Dimensions,
-  PermissionsAndroid,
   RefreshControl,
 } from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
