@@ -10,7 +10,7 @@ import {
 import {useState} from 'react';
 import {CommonActions} from '@react-navigation/native';
 import {useSelector, useDispatch} from 'react-redux';
-import {postLoginUser} from './redux/ActionCreators';
+import {postLoginUser, addNewuser} from './redux/ActionCreators';
 import {Loading} from './LoadingComponent';
 
 function Login({navigation}) {
@@ -21,20 +21,22 @@ function Login({navigation}) {
   const isSignIn = useSelector((state) => state.user.isSignIn);
   const isLoading = useSelector((state) => state.user.isLoading);
   useEffect(() => {
-    const bootAsync = async () => {
+    let isMounted = false;
+    const bootAsync = () => {
+      isMounted = true;
       if (isSignIn) {
-        navigation.navigate('Tab', {user: user});
+        navigation.navigate('Tab');
         const resetAction = CommonActions.reset({
           index: 0,
-          routes: [{name: 'Tab', params: {user: user}}],
+          routes: [{name: 'Tab'}],
         });
         navigation.dispatch(resetAction);
       } else {
         return false;
       }
     };
-    bootAsync();
-  }, [navigation, isSignIn, user]);
+    if (!isMounted) bootAsync();
+  }, [navigation, isSignIn]);
   function handleEmail(text) {
     setEmail(text);
   }
@@ -48,13 +50,9 @@ function Login({navigation}) {
     }
     return null;
   }
-  function emailError() {
-    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  function usernameError() {
     if (!email) {
-      return 'Invalid email';
-    }
-    if (!re.test(email.toLowerCase())) {
-      return 'Invalid format email';
+      return 'Invalid username';
     }
     return null;
   }
@@ -68,22 +66,24 @@ function Login({navigation}) {
   }
   function handleLoginBtn() {
     //validation
-    // const err = passwordError() || emailError();
-    // const errorFullnull = passwordError() && emailError();
-    // if (errorFullnull !== null) {
-    //   Alert.alert('You must fill out something!');
-    //   return;
-    // } else if (err) {
-    //   Alert.alert('Validation error', err);
-    //   return;
-    // }
+    const err = passwordError() || usernameError();
+    const errorFullnull = passwordError() && usernameError();
+    if (errorFullnull !== null) {
+      Alert.alert('You must fill out something!');
+      return;
+    } else if (err) {
+      Alert.alert('Validation error', err);
+      return;
+    }
     dispatch(
       postLoginUser(
         email,
         password,
         (json) => {
-          if (json.status === 1) navigation.navigate('Tab');
-          else {
+          if (json.status === 1) {
+            dispatch(addNewuser(json.data));
+            navigation.navigate('Tab');
+          } else {
             const error = 'Error ' + json.description;
 
             return Alert.alert(
@@ -110,50 +110,49 @@ function Login({navigation}) {
   }
   if (isSignIn) return <Loading />;
   else if (isLoading) return <Loading />;
-  else {
-    return (
-      <View style={styles.container}>
-        <View style={styles.headerColor}>
-          <Text style={styles.headerText}>Welcome</Text>
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Username</Text>
-          <TextInput
-            style={styles.textInput}
-            placeholder="Username"
-            underlineColorAndroid="grey"
-            onChangeText={(text) => handleEmail(text)}
-            value={email}
-            autoCapitalize="none"
-          />
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            placeholder="Password"
-            underlineColorAndroid="grey"
-            onChangeText={(text) => handlePassword(text)}
-            value={password}
-            secureTextEntry={true}
-          />
-          <Text
-            style={styles.register}
-            onPress={() => navigation.navigate('registerScreen')}>
-            REGISTER
-          </Text>
-          <TouchableOpacity
-            style={styles.loginBtn}
-            onPress={handleLoginBtn}
-            onLongPress={handleLoginBtnLongPress}>
-            <Text style={styles.loginBtnLabel}>LOGIN</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.loginAsGuest}
-            onPress={() => navigation.navigate('Tab')}>
-            <Text style={styles.loginBtnLabel}>LOGIN AS GUEST</Text>
-          </TouchableOpacity>
-        </View>
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.headerColor}>
+        <Text style={styles.headerText}>Welcome</Text>
       </View>
-    );
-  }
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Username</Text>
+        <TextInput
+          style={styles.textInput}
+          placeholder="Username"
+          underlineColorAndroid="grey"
+          onChangeText={(text) => handleEmail(text)}
+          value={email}
+          autoCapitalize="none"
+        />
+        <Text style={styles.label}>Password</Text>
+        <TextInput
+          placeholder="Password"
+          underlineColorAndroid="grey"
+          onChangeText={(text) => handlePassword(text)}
+          value={password}
+          secureTextEntry={true}
+        />
+        <Text
+          style={styles.register}
+          onPress={() => navigation.navigate('registerScreen')}>
+          REGISTER
+        </Text>
+        <TouchableOpacity
+          style={styles.loginBtn}
+          onPress={handleLoginBtn}
+          onLongPress={handleLoginBtnLongPress}>
+          <Text style={styles.loginBtnLabel}>LOGIN</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.loginAsGuest}
+          onPress={() => navigation.navigate('Tab')}>
+          <Text style={styles.loginBtnLabel}>LOGIN AS GUEST</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 }
 export default Login;
 const styles = StyleSheet.create({

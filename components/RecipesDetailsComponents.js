@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFE9B8',
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
+    //resizeMode: "center",
     borderRadius: 24,
   },
   btnBox: {

@@ -1,4 +1,4 @@
-export const baseUrl = 'https://dientoandm.herokuapp.com/api/';
+export const baseUrl = 'http://cookingrecipe.ml:8000/api/';
 export const GET_METHOD = {
   method: 'GET',
   headers: {

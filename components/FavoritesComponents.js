@@ -1,5 +1,12 @@
 import React from 'react';
-import {FlatList, View, Text} from 'react-native';
+import {
+  FlatList,
+  View,
+  Text,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+} from 'react-native';
 import {ListItem} from 'react-native-elements';
 import {connect, useSelector} from 'react-redux';
 import {Loading} from './LoadingComponent';
@@ -44,13 +51,22 @@ function Favorites({navigation}) {
     );
   } else {
     return (
-      <FlatList
-        data={data.filter((dish) => favorites.some((el) => el === dish.id))}
-        renderItem={renderMenuItem}
-        keyExtractor={(item) => item.id.toString()}
-      />
+      <SafeAreaView style={styles.container}>
+        <StatusBar hidden={true} />
+        <FlatList
+          data={data.filter((dish) => favorites.some((el) => el === dish.id))}
+          renderItem={renderMenuItem}
+          keyExtractor={(item) => item.id.toString()}
+        />
+      </SafeAreaView>
     );
   }
 }
-
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: StatusBar.currentHeight,
+    backgroundColor: '#fff',
+  },
+});
 export default connect(mapStateToProps)(Favorites);

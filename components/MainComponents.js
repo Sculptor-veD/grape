@@ -10,10 +10,14 @@ import {createStackNavigator} from '@react-navigation/stack';
 import Login from './LoginComponents';
 import Register from './RegisterComponents';
 import NewRecipeComponents from './NewRecipeComponents';
+import {HeaderBackButton} from '@react-navigation/stack';
 import {
   createBottomTabNavigator,
   BottomTabBar,
 } from '@react-navigation/bottom-tabs';
+import {fetchDishes, userLogout} from './redux/ActionCreators';
+import {useSelector, useDispatch} from 'react-redux';
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 function AuthStack() {
@@ -45,7 +49,7 @@ function MyTabsApp() {
         showIcon: true,
         style: styles.navigator,
         tabStyle: {
-          backgroundColor: '#F2F2F2',
+          backgroundColor: '#FFF',
           borderWidth: 0,
         },
       }}>
@@ -61,7 +65,9 @@ function MyTabsApp() {
       <Tab.Screen
         name="AddNewRecipe"
         component={NewRecipeComponents}
-        options={{tabBarButton: (props) => <FloatBtn {...props} />}}
+        options={{
+          tabBarButton: (props) => <FloatBtn {...props} bgColor={'#FFF'} />,
+        }}
       />
       <Tab.Screen
         name="Favorites"
@@ -76,6 +82,16 @@ function MyTabsApp() {
   );
 }
 export default function RootStack() {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    let isMounted = false;
+
+    function loadRecipes() {
+      dispatch(fetchDishes());
+      isMounted = true;
+    }
+    if (!isMounted) loadRecipes();
+  }, [dispatch]);
   return (
     <NavigationContainer>
       <Stack.Navigator>
@@ -95,6 +111,9 @@ export default function RootStack() {
           options={{
             headerTransparent: true,
             title: '',
+            headerLeft: (props) => (
+              <HeaderBackButton {...props} tintColor={'#fff'} />
+            ),
           }}
         />
       </Stack.Navigator>

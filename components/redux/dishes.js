@@ -1,6 +1,6 @@
 import * as ActionTypes from './ActionTypes';
 
-const initState = {isLoading: true, errMess: null, dishes: []};
+const initState = {isLoading: false, errMess: null, dishes: []};
 
 export const dishes = (state = initState, action) => {
   switch (action.type) {

@@ -6,7 +6,7 @@ const pathX = '620';
 const pathY = '935';
 const pathA = '950';
 const pathB = '1200';
-export const TabBg = ({color = '#F2F2F2', ...props}) => {
+export const TabBg = ({color = '#1aeddc', ...props}) => {
   return (
     <Svg width={80} height={60} viewBox={`0 0 80 61`} {...props}>
       <Path

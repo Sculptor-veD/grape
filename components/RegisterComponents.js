@@ -10,6 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import {baseUrl} from '../shared/baseUrl';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import {postUser, userFailed} from './redux/ActionCreators';
 import {connect} from 'react-redux';
 import {Loading} from './LoadingComponent';
@@ -111,7 +112,11 @@ class Register extends React.Component {
           );
         else {
           const error = 'Error ' + json.description;
-
+          this.setState({
+            userName: '',
+            email: '',
+            password: '',
+          });
           return Alert.alert(
             'Error',
             `${error}`,
