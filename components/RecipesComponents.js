@@ -1,4 +1,5 @@
-import React, {useState, useEffect} from 'react';
+/* eslint-disable react-native/no-inline-styles */
+import React from 'react';
 import {
   StatusBar,
   Text,
@@ -7,14 +8,14 @@ import {
   Image,
   Dimensions,
   Animated,
-  FlatList,
   Alert,
+  RefreshControl,
 } from 'react-native';
 import {Loading} from '../components/LoadingComponent';
 import {Rating, Icon} from 'react-native-elements';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import {useSelector, useDispatch} from 'react-redux';
-import {fetchDishes, userLogout} from './redux/ActionCreators';
+import {userLogout, fetchDishes} from './redux/ActionCreators';
 
 const {width, height} = Dimensions.get('window');
 const ITEM_SIZE = width * 0.73;
@@ -35,20 +36,19 @@ const Backdrop = ({data, scrollX}) => {
   );
 };
 function Recipes({navigation}) {
+  const [refreshing, setRefreshing] = React.useState(false);
   const scrollX = React.useRef(new Animated.Value(0)).current;
   const data = useSelector((state) => state.dishes.dishes);
   const isLoading = useSelector((state) => state.dishes.isLoading);
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.user);
-  useEffect(() => {
-    let isMounted = false;
 
-    function loadRecipes() {
-      dispatch(fetchDishes());
-      isMounted = true;
-    }
-    if (!isMounted) loadRecipes();
+  const user = useSelector((state) => state.user.user);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    dispatch(fetchDishes());
+    setRefreshing(false);
   }, [dispatch]);
+
   const renderItem = ({item, index}) => {
     const inputRange = [
       (index - 1) * ITEM_SIZE,
@@ -142,6 +142,9 @@ function Recipes({navigation}) {
 
         <StatusBar hidden />
         <Animated.FlatList
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
           data={data}
           keyExtractor={(item, index) => item.id.toString()}
           horizontal

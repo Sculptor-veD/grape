@@ -17,7 +17,6 @@ function Login({navigation}) {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.user);
   const isSignIn = useSelector((state) => state.user.isSignIn);
   const isLoading = useSelector((state) => state.user.isLoading);
   useEffect(() => {
@@ -35,7 +34,9 @@ function Login({navigation}) {
         return false;
       }
     };
-    if (!isMounted) bootAsync();
+    if (!isMounted) {
+      bootAsync();
+    }
   }, [navigation, isSignIn]);
   function handleEmail(text) {
     setEmail(text);
@@ -108,8 +109,11 @@ function Login({navigation}) {
       ),
     );
   }
-  if (isSignIn) return <Loading />;
-  else if (isLoading) return <Loading />;
+  if (isSignIn) {
+    return <Loading />;
+  } else if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <View style={styles.container}>

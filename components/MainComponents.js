@@ -15,8 +15,8 @@ import {
   createBottomTabNavigator,
   BottomTabBar,
 } from '@react-navigation/bottom-tabs';
-import {fetchDishes, userLogout} from './redux/ActionCreators';
-import {useSelector, useDispatch} from 'react-redux';
+import {fetchDishes} from './redux/ActionCreators';
+import {useDispatch} from 'react-redux';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -90,7 +90,9 @@ export default function RootStack() {
       dispatch(fetchDishes());
       isMounted = true;
     }
-    if (!isMounted) loadRecipes();
+    if (!isMounted) {
+      loadRecipes();
+    }
   }, [dispatch]);
   return (
     <NavigationContainer>
@@ -112,7 +114,7 @@ export default function RootStack() {
             headerTransparent: true,
             title: '',
             headerLeft: (props) => (
-              <HeaderBackButton {...props} tintColor={'#fff'} />
+              <HeaderBackButton {...props} tintColor={'#68ed26'} />
             ),
           }}
         />
