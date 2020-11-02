@@ -41,52 +41,84 @@ export const addComment = (comment) => ({
   payload: comment,
 });
 
-export const postComment = (dishId, rating, author, comments) => (dispatch) => {
-  const date = new Date().toISOString();
-  let nextCommentId = '_' + Math.random().toString(36).substr(2, 9);
+export const postComment = (dishId, rating, author, comments, isMember) => (
+  dispatch,
+) => {
   const comment = [
     {
-      id: nextCommentId,
-      dishId: dishId,
       rating: rating,
       comment: comments,
       author: author,
-      date: date,
+      isMember: isMember,
+      dishId: dishId,
     },
   ];
-  console.log('commentAction', comment);
-  setTimeout(() => {
-    dispatch(addComment(comment));
-  }, 2000);
+  fetch(baseUrl + 'Comment/createComment', {
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+    body: JSON.stringify({
+      rating: rating,
+      comment: comments,
+      author: author,
+      isMember: isMember,
+      dishId: dishId,
+    }),
+  })
+    .then(
+      (response) => {
+        if (response.ok) {
+          return response;
+        } else {
+          var error = new Error(
+            'Error ' + response.status + ': ' + response.statusText,
+          );
+          error.response = response;
+          throw error;
+        }
+      },
+      (error) => {
+        var errmess = new Error(error.message);
+        throw errmess;
+      },
+    )
+    .then((response) => response.json())
+    .then((json) => {
+      console.log(json);
+      dispatch(addComment(comment));
+    })
+    .catch((error) => dispatch(commentsFailed(error.message)));
 };
 
-export function fetchDishes() {
-  return async (dispatch) => {
-    dispatch(dishesLoading());
+export const fetchDishes = () => (dispatch) => {
+  dispatch(dishesLoading());
 
-    return fetch(baseUrl + 'Dish/getAllDish')
-      .then(
-        (response) => {
-          if (response.ok) {
-            return response;
-          } else {
-            var error = new Error(
-              'Error ' + response.status + ': ' + response.statusText,
-            );
-            error.response = response;
-            throw error;
-          }
-        },
-        (error) => {
-          var errmess = new Error(error.message);
-          throw errmess;
-        },
-      )
-      .then((response) => response.json())
-      .then((json) => dispatch(addDishes(json.dishes)))
-      .catch((error) => dispatch(dishesFailed(error.message)));
-  };
-}
+  fetch(baseUrl + 'Dish/getAllDish')
+    .then(
+      (response) => {
+        if (response.ok) {
+          return response;
+        } else {
+          var error = new Error(
+            'Error ' + response.status + ': ' + response.statusText,
+          );
+          error.response = response;
+          throw error;
+        }
+      },
+      (error) => {
+        var errmess = new Error(error.message);
+        throw errmess;
+      },
+    )
+    .then((response) => response.json())
+    .then((json) => {
+      dispatch(addDishes(json.dishes));
+    })
+    .catch((error) => dispatch(dishesFailed(error.message)));
+};
 
 export const dishesLoading = () => ({
   type: ActionTypes.DISHES_LOADING,

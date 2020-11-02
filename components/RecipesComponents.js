@@ -16,7 +16,6 @@ import {Rating, Icon} from 'react-native-elements';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import {useSelector, useDispatch} from 'react-redux';
 import {userLogout, fetchDishes} from './redux/ActionCreators';
-
 const {width, height} = Dimensions.get('window');
 const ITEM_SIZE = width * 0.73;
 
@@ -35,13 +34,12 @@ const Backdrop = ({data, scrollX}) => {
     </View>
   );
 };
-function Recipes({navigation}) {
+export function Recipes({navigation}) {
   const [refreshing, setRefreshing] = React.useState(false);
   const scrollX = React.useRef(new Animated.Value(0)).current;
   const data = useSelector((state) => state.dishes.dishes);
   const isLoading = useSelector((state) => state.dishes.isLoading);
   const dispatch = useDispatch();
-
   const user = useSelector((state) => state.user.user);
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -145,7 +143,7 @@ function Recipes({navigation}) {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
-          data={data}
+          data={data.reverse()}
           keyExtractor={(item, index) => item.id.toString()}
           horizontal
           bounces={false}
@@ -221,4 +219,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-export default Recipes;
+export const MemoizedRecipes = React.memo(Recipes);

@@ -19,19 +19,25 @@ class Register extends React.Component {
     super(props);
     this.state = {
       userName: '',
-      email: '',
+      name: '',
       password: '',
     };
+    this.nameRefs = React.createRef();
+    this.usernameRefs = React.createRef();
+    this.passwordRefs = React.createRef();
+    this.btnRefs = React.createRef();
   }
-
+  componentDidMount() {
+    this.usernameRefs.current.focus();
+  }
   handleUsername(text) {
     this.setState({
       userName: text,
     });
   }
-  handleEmail(text) {
+  handlename(text) {
     this.setState({
-      email: text,
+      name: text,
     });
   }
   handlePassword(text) {
@@ -51,28 +57,25 @@ class Register extends React.Component {
     }
     return null;
   };
-  emailError = () => {
-    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    if (!this.state.email) {
-      return 'Invalid email';
-    }
-    if (!re.test(this.state.email.toLowerCase())) {
-      return 'Invalid format email';
+  nameError = () => {
+    if (!this.state.name) {
+      return 'Invalid name';
     }
     return null;
   };
   handleRegister = () => {
     //validation
-    // const err =
-    //   this.userNameError() || this.passwordError() || this.emailError();
-    // const errorFullnull =
-    //   this.userNameError() && this.passwordError() && this.emailError();
-    // if (erro ,rFullnull !== null) {
-    //   Aler
-    // } else if (err) {
-    //   Alert.alert('Validation error', err);
-    //   return;
-    // }
+    const err =
+      this.userNameError() || this.passwordError() || this.nameError();
+    const errorFullnull =
+      this.userNameError() && this.passwordError() && this.nameError();
+    if (errorFullnull) {
+      Alert.alert('Error', 'You must fill out something!');
+      return;
+    } else if (err) {
+      Alert.alert('Validation error', err);
+      return;
+    }
     // () =>
     //     Alert.alert(
     //       'Alert Title',
@@ -87,11 +90,10 @@ class Register extends React.Component {
     //       ],
     //       {cancelable: false},
     //     ),
-    console.log(this.props.user.isLoading);
     this.props.postUser(
       this.state.userName,
       this.state.password,
-      this.state.email,
+      this.state.name,
       (json) => {
         if (json.status === 1)
           return Alert.alert(
@@ -114,7 +116,7 @@ class Register extends React.Component {
           const error = 'Error ' + json.description;
           this.setState({
             userName: '',
-            email: '',
+            name: '',
             password: '',
           });
           return Alert.alert(
@@ -157,15 +159,19 @@ class Register extends React.Component {
                 onChangeText={(text) => this.handleUsername(text)}
                 value={this.state.userName}
                 autoCapitalize="none"
+                ref={this.usernameRefs}
+                onSubmitEditing={() => this.nameRefs.current.focus()}
               />
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label}>Name</Text>
               <TextInput
                 style={styles.textInput}
-                placeholder="Email"
+                placeholder="Name"
                 underlineColorAndroid="grey"
-                onChangeText={(text) => this.handleEmail(text)}
-                value={this.state.email}
+                onChangeText={(text) => this.handlename(text)}
+                value={this.state.name}
                 autoCapitalize="none"
+                ref={this.nameRefs}
+                onSubmitEditing={() => this.passwordRefs.current.focus()}
               />
               <Text style={styles.label}>Password</Text>
               <TextInput
@@ -177,6 +183,8 @@ class Register extends React.Component {
                 textContentType="password"
                 secureTextEntry={true}
                 autoCapitalize="none"
+                ref={this.passwordRefs}
+                onSubmitEditing={() => this.handleRegister()}
               />
               <Text
                 style={styles.register}
@@ -185,6 +193,7 @@ class Register extends React.Component {
               </Text>
               <TouchableOpacity
                 style={styles.loginBtn}
+                ref={this.btnRefs}
                 onPress={() => this.handleRegister()}>
                 <Text style={styles.loginBtnLabel}>REGISTER</Text>
               </TouchableOpacity>
@@ -251,8 +260,8 @@ const styles = StyleSheet.create({
   },
 });
 const mapDispatchToProps = (dispatch) => ({
-  postUser: (username, password, email, callback) =>
-    dispatch(postUser(username, password, email, callback)),
+  postUser: (username, password, name, callback) =>
+    dispatch(postUser(username, password, name, callback)),
   userFailed: (error) => dispatch(userFailed(error)),
 });
 const mapStateToProps = (state) => ({

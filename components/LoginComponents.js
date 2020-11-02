@@ -70,7 +70,7 @@ function Login({navigation}) {
     const err = passwordError() || usernameError();
     const errorFullnull = passwordError() && usernameError();
     if (errorFullnull !== null) {
-      Alert.alert('You must fill out something!');
+      Alert.alert('Error', 'You must fill out something!');
       return;
     } else if (err) {
       Alert.alert('Validation error', err);
@@ -149,11 +149,11 @@ function Login({navigation}) {
           onLongPress={handleLoginBtnLongPress}>
           <Text style={styles.loginBtnLabel}>LOGIN</Text>
         </TouchableOpacity>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.loginAsGuest}
           onPress={() => navigation.navigate('Tab')}>
           <Text style={styles.loginBtnLabel}>LOGIN AS GUEST</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );

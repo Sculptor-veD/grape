@@ -12,165 +12,213 @@ import {
   Dimensions,
   Animated,
   TextInput,
+  ScrollView,
+  Alert,
 } from 'react-native';
+import {Loading} from './LoadingComponent';
 import {useSelector, useDispatch} from 'react-redux';
 import {Icon, Button} from 'react-native-elements';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {ListItem, Divider, Rating} from 'react-native-elements';
-import {postNewFavorite, removeFavorite} from './redux/ActionCreators';
+import {
+  postNewFavorite,
+  removeFavorite,
+  fetchDishes,
+  postComment,
+} from './redux/ActionCreators';
 import {baseUrl} from './../shared/baseUrl';
 
 const {width, height} = Dimensions.get('window');
 
-function RenderRecipe(props) {
-  const data = props.data;
-
+function RenderComments({commentsData}) {
   return (
-    <View style={styles.container}>
-      <View style={{flex: 1}}>
-        <Image style={styles.img} source={{uri: data.imgs[0]}} />
-      </View>
-      <View style={styles.detailsView}>
-        <View style={styles.contentDetails}>
-          <Text style={styles.descriptionText}>{data.name}</Text>
-          <Text style={{marginTop: 10}}>{data.description}</Text>
-          <View style={styles.bottomView}>
-            <View style={styles.btnBox}>
-              <Icon
-                name={props.favorite ? 'heart' : 'heart-o'}
-                type="font-awesome"
-                size={50}
-                color="red"
-                onPress={() =>
-                  props.favorite ? props.onRemove() : props.onPress()
-                }
-              />
-            </View>
-            <View>
-              <TouchableOpacity
-                style={styles.viewCommentBtn}
-                onPress={() => props.scrollRef()}>
-                <Text style={{fontWeight: 'bold'}}>View Comments</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </View>
+    <View style={{flex: 1}}>
+      <Divider />
+      {commentsData.map((item, i) => (
+        <ListItem key={i} bottomDivider>
+          <Icon
+            name="person-circle-outline"
+            size={35}
+            type="ionicon"
+            color="#aaa"
+          />
+          <ListItem.Content>
+            <Text>{item.author}</Text>
+            <Rating
+              readonly
+              //  ratingBackgroundColor="#c8c7c8"
+              type="custom"
+              imageSize={10}
+              //tintColor="#4d2610"
+              ratingCount={5}
+              startingValue={item.rating}
+            />
+            <ListItem.Title>{item.comment}</ListItem.Title>
+          </ListItem.Content>
+        </ListItem>
+      ))}
     </View>
   );
 }
-
-function RecipesDetails({navigation, route}) {
+export function RecipesDetails({route}) {
   const {dishId} = route.params;
-  const data = useSelector((state) => state.dishes.dishes);
-  const comments = data.filter((dish) => dish.id === dishId)[0];
+  const dishes = useSelector((state) => state.dishes.dishes);
+  const user = useSelector((state) => state.user.user);
   const favorites = useSelector((state) => state.favorites);
+  const checkFav = favorites.some((el) => el === dishId);
   const dispatch = useDispatch();
-  const dispatchNewFavorite = () => dispatch(postNewFavorite(dishId));
-  const dispatchRemoveFavorite = () => dispatch(removeFavorite(dishId));
   const scrollRef = React.useRef();
+  const [commentsData, setData] = React.useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [commentsData, setcommentsData] = useState(comments.comments);
   const [commentInput, setInput] = useState();
+  const dishesData = dishes.filter((dish) => dish.id === dishId)[0];
+  const [isLoading, setLoading] = React.useState(false);
+  React.useEffect(() => {
+    fetch(baseUrl + `Comment/getCommentByDishId/${dishId}`)
+      .then((res) => res.json())
+      .then((json) => {
+        setData(json.comments);
+      });
+  }, [dishId]);
   const markFavorite = () => {
-    dispatchNewFavorite(dishId);
-    console.log(dishId, favorites);
+    dispatch(postNewFavorite(dishId));
   };
 
   const deleteFavorite = () => {
-    dispatchRemoveFavorite(dishId);
-    console.log(dishId, favorites);
+    dispatch(removeFavorite(dishId));
   };
 
-  const handleSubmit = () => {};
+  const handleSubmit = () => {
+    const obj = {
+      rating: 3,
+      comment: commentInput,
+      author: user.username,
+      isMember: 1,
+      dishId: dishId,
+    };
+    if (!commentInput) {
+      Alert.alert('Error', 'Please check your input');
+      setLoading(false);
+    } else {
+      setLoading(true);
+      fetch(baseUrl + 'Comment/createComment', {
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        body: JSON.stringify({
+          rating: 3,
+          comment: commentInput,
+          author: user.username,
+          isMember: 1,
+          dishId: dishId,
+        }),
+      })
+        .then((res) => res.json())
+        .then((json) => {
+          setLoading(false);
+          if (json.status === 1) {
+            setData(commentsData.concat([obj]));
+            setInput('');
+          } else {
+            const err = 'Error ' + json.description;
+            throw err;
+          }
+        })
+        .catch((error) => console.log(error));
+    }
+  };
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = () => {
     setRefreshing(true);
-    fetch(baseUrl + 'Dish/getAllDish')
+    fetch(baseUrl + `Comment/getCommentByDishId/${dishId}`)
       .then((res) => res.json())
       .then((json) => {
-        const cmtData = json.dishes.filter((dish) => dish.id === dishId)[0]
-          .comments;
-        setcommentsData(cmtData);
+        setData(json.comments);
       })
       .then(() => setRefreshing(false));
-  }, [dishId]);
-
-  return (
-    <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
-      <StatusBar hidden />
-      <Animated.ScrollView
-        scrollEventThrottle={16}
-        ref={scrollRef}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }>
-        <RenderRecipe
-          data={data.filter((dish) => dish.id === dishId)[0]}
-          favorite={favorites.some((el) => el === dishId)}
-          onPress={markFavorite}
-          onRemove={deleteFavorite}
-          scrollRef={() => scrollRef.current.scrollToEnd()}
-        />
-        <Divider />
-        <View style={{height: height, marginTop: 10}}>
-          <View style={styles.addingComment}>
-            <View style={styles.commentIcon}>
-              <Icon
-                name="person-circle-outline"
-                size={50}
-                type="ionicon"
-                color="#aaa"
-                containerStyle={{flex: 1, justifyContent: 'center'}}
-              />
+  };
+  if (isLoading) return <Loading />;
+  else {
+    return (
+      <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
+        <StatusBar hidden />
+        <Animated.ScrollView
+          scrollEventThrottle={16}
+          ref={scrollRef}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
+          <View style={styles.container}>
+            <View style={{flex: 1}}>
+              <Image style={styles.img} source={{uri: dishesData.imgs[0]}} />
             </View>
-            <View style={styles.commentSection}>
-              <TextInput
-                placeholder="Comment"
-                style={styles.commentInput}
-                multiline={true}
-                numberOfLines={3}
-                onChangeText={(text) => setInput(text)}
-                value={commentInput}
-              />
+            <View style={styles.detailsView}>
+              <View style={styles.contentDetails}>
+                <Text style={styles.descriptionText}>{dishesData.name}</Text>
+                <Text style={{marginTop: 10}}>{dishesData.description}</Text>
+                <View style={styles.bottomView}>
+                  <View style={styles.btnBox}>
+                    <Icon
+                      name={checkFav ? 'heart' : 'heart-o'}
+                      type="font-awesome"
+                      size={50}
+                      color="red"
+                      onPress={() =>
+                        checkFav ? deleteFavorite() : markFavorite()
+                      }
+                    />
+                  </View>
+                  <View>
+                    <TouchableOpacity
+                      style={styles.viewCommentBtn}
+                      onPress={() => scrollRef.current.scrollToEnd()}>
+                      <Text style={{fontWeight: 'bold'}}>View Comments</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
             </View>
-          </View>
-          <View style={styles.submitBtn}>
-            <Button
-              title="Post your comment"
-              buttonStyle={{width: width * 0.5}}
-              containerStyle={{alignItems: 'flex-end'}}
-              onPress={handleSubmit}
-            />
           </View>
           <Divider />
-          {commentsData.map((item, i) => (
-            <ListItem key={i} bottomDivider>
-              <Icon
-                name="person-circle-outline"
-                size={35}
-                type="ionicon"
-                color="#aaa"
-              />
-              <ListItem.Content>
-                <Text>{item.author}</Text>
-                <Rating
-                  readonly
-                  //  ratingBackgroundColor="#c8c7c8"
-                  type="custom"
-                  imageSize={10}
-                  //tintColor="#4d2610"
-                  ratingCount={5}
-                  startingValue={item.rating}
+          <View style={{height: height, marginTop: 10}}>
+            <View style={styles.addingComment}>
+              <View style={styles.commentIcon}>
+                <Icon
+                  name="person-circle-outline"
+                  size={50}
+                  type="ionicon"
+                  color="#aaa"
+                  containerStyle={{flex: 1, justifyContent: 'center'}}
                 />
-                <ListItem.Title>{item.comment}</ListItem.Title>
-              </ListItem.Content>
-            </ListItem>
-          ))}
-        </View>
-      </Animated.ScrollView>
-    </SafeAreaView>
-  );
+              </View>
+
+              <View style={styles.commentSection}>
+                <TextInput
+                  placeholder="Comment"
+                  style={styles.commentInput}
+                  multiline={true}
+                  numberOfLines={3}
+                  onChangeText={(text) => setInput(text)}
+                  value={commentInput}
+                />
+                <View style={styles.submitBtn}>
+                  <Button
+                    title="Post your comment"
+                    buttonStyle={{width: width * 0.5}}
+                    containerStyle={{alignItems: 'flex-end'}}
+                    onPress={handleSubmit}
+                  />
+                </View>
+              </View>
+            </View>
+            <RenderComments commentsData={commentsData} />
+          </View>
+        </Animated.ScrollView>
+      </SafeAreaView>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
@@ -303,4 +351,4 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 });
-export default RecipesDetails;
+export const MemoizedRecipesDetails = React.memo(RecipesDetails);

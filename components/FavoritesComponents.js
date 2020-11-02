@@ -8,21 +8,15 @@ import {
   StyleSheet,
 } from 'react-native';
 import {ListItem} from 'react-native-elements';
-import {connect, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import {Loading} from './LoadingComponent';
-
-const mapStateToProps = (state) => {
-  return {
-    dishes: state.dishes,
-    favorites: state.favorites,
-  };
-};
 
 function Favorites({navigation}) {
   const data = useSelector((state) => state.dishes.dishes);
   const isLoading = useSelector((state) => state.dishes.isLoading);
   const errMess = useSelector((state) => state.dishes.errMess);
   const favorites = useSelector((state) => state.favorites);
+  console.log(favorites);
   const renderMenuItem = ({item, index}) => {
     return (
       <View>
@@ -69,4 +63,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
 });
-export default connect(mapStateToProps)(Favorites);
+export default Favorites;

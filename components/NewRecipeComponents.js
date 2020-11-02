@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import * as Redux from 'react-redux';
 import {
   View,
   Text,
@@ -10,7 +11,9 @@ import {
   Dimensions,
   RefreshControl,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
+import {baseUrl} from '../shared/baseUrl';
 import {ScrollView} from 'react-native-gesture-handler';
 import {Image, Icon} from 'react-native-elements';
 import ImagePicker from 'react-native-image-picker';
@@ -24,11 +27,28 @@ const options = {
   },
 };
 
-function NewRecipeComponents() {
+export function NewRecipeComponents({navigation}) {
   const [name, setName] = useState();
   const [description, setDescription] = useState();
   const [img, setImg] = useState();
   const [refreshing, setRefreshing] = React.useState(false);
+  const user = Redux.useSelector((state) => state.user.user);
+  const [isLoading, setLoading] = React.useState(false);
+
+  let imgUri = '';
+  function nameError() {
+    if (!name) {
+      return 'Invalid name';
+    }
+    return null;
+  }
+  function descriptionError() {
+    if (!description) {
+      return 'Invalid description';
+    }
+    return null;
+  }
+
   const HandleImgs = (callback) => {
     let form = new FormData();
     ImagePicker.launchImageLibrary(options, (response) => {
@@ -51,23 +71,67 @@ function NewRecipeComponents() {
       }
     });
   };
-  const uploadImage = () => {
-    HandleImgs((form) => {
-      fetch('https://dientoandm.herokuapp.com/api/Image/UploadImage', {
+  const uploadImage = async () => {
+    HandleImgs(async (form) => {
+      const path = await fetch(baseUrl + 'Image/UploadImage', {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'multipart/form-data',
-          Authorization:
-            'Bearer ' +
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywibmFtZSI6Ik5ndXnDqm4gYsOqIMSRw6oiLCJ0eXBlIjowLCJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNjAzODgwMjU3LCJleHAiOjE2MDM5MTYyNTd9.efMommxWYBe-ZIRfGSV58dgA_IlBxD4Nu6BKIGHJ_DU',
+          Authorization: 'Bearer ' + user.token,
         },
         method: 'POST',
         body: form,
       })
         .then((req) => req.json())
-        .then((json) => console.log(json));
+        .then((json) => {
+          return json.data;
+        });
+      imgUri = path;
     });
+
     //HandleImgs((form) => console.log(form));
+  };
+
+  const handleSubmit = () => {
+    const err = nameError() || descriptionError();
+    const errorFullnull = nameError() && descriptionError();
+    if (errorFullnull !== null) {
+      Alert.alert('Error', 'You must fill out something!');
+      return;
+    } else if (err) {
+      Alert.alert('Validation error', err);
+      return;
+    } else {
+      setLoading(true);
+      fetch(baseUrl + 'Dish/createDish', {
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + user.token,
+        },
+        method: 'POST',
+        body: JSON.stringify({
+          name: name,
+          label: 'Hot',
+          featured: false,
+          category: 'mains',
+          price: 4.3,
+          description: description,
+          imgs: [imgUri],
+        }),
+      })
+        .then((res) => res.json())
+        .then((json) => {
+          setLoading(false);
+          if (json.status === 1) {
+            console.log('OK');
+          } else {
+            const error = 'Error ' + json.description;
+            throw error;
+          }
+        })
+        .catch((error) => console.log(error));
+    }
   };
   const checkImg = () => {
     if (!img) {
@@ -121,10 +185,14 @@ function NewRecipeComponents() {
               value={description}
             />
             <View style={styles.btnView}>
-              <TouchableOpacity style={styles.loginBtn}>
+              <TouchableOpacity
+                style={styles.loginBtn}
+                onPress={() => navigation.navigate('Home')}>
                 <Text style={styles.loginBtnLabel}>CANCEL</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.loginBtn}>
+              <TouchableOpacity
+                style={styles.loginBtn}
+                onPress={() => handleSubmit()}>
                 <Text style={styles.loginBtnLabel}>SUBMIT</Text>
               </TouchableOpacity>
             </View>
@@ -140,6 +208,7 @@ const styles = StyleSheet.create({
     //marginTop: StatusBar.currentHeight,
   },
   roundedInput: {
+    color: 'white',
     borderWidth: 1,
     borderRadius: 20,
     margin: 5,
@@ -198,4 +267,4 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
   },
 });
-export default NewRecipeComponents;
+export const MemoizedNewRecipeComponents = React.memo(NewRecipeComponents);

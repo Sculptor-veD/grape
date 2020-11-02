@@ -1,15 +1,15 @@
 import React, {useEffect} from 'react';
 import {View, StyleSheet} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
-import Recipes from './RecipesComponents';
-import RecipesDetails from './RecipesDetailsComponents';
+import {MemoizedRecipes} from './RecipesComponents';
+import {MemoizedRecipesDetails} from './RecipesDetailsComponents';
 import Favorites from './FavoritesComponents';
 import FloatBtn from './TabBarFloatBtn';
 import {Icon} from 'react-native-elements';
 import {createStackNavigator} from '@react-navigation/stack';
 import Login from './LoginComponents';
 import Register from './RegisterComponents';
-import NewRecipeComponents from './NewRecipeComponents';
+import {MemoizedNewRecipeComponents} from './NewRecipeComponents';
 import {HeaderBackButton} from '@react-navigation/stack';
 import {
   createBottomTabNavigator,
@@ -55,7 +55,7 @@ function MyTabsApp() {
       }}>
       <Tab.Screen
         name="Home"
-        component={Recipes}
+        component={MemoizedRecipes}
         options={{
           tabBarIcon: () => (
             <Icon name="home" type="ionicon" size={24} color={'#aaa'} />
@@ -64,7 +64,7 @@ function MyTabsApp() {
       />
       <Tab.Screen
         name="AddNewRecipe"
-        component={NewRecipeComponents}
+        component={MemoizedNewRecipeComponents}
         options={{
           tabBarButton: (props) => <FloatBtn {...props} bgColor={'#FFF'} />,
         }}
@@ -81,18 +81,14 @@ function MyTabsApp() {
     </Tab.Navigator>
   );
 }
-export default function RootStack() {
+export function RootStack() {
   const dispatch = useDispatch();
   useEffect(() => {
-    let isMounted = false;
-
     function loadRecipes() {
       dispatch(fetchDishes());
-      isMounted = true;
     }
-    if (!isMounted) {
-      loadRecipes();
-    }
+
+    loadRecipes();
   }, [dispatch]);
   return (
     <NavigationContainer>
@@ -109,7 +105,7 @@ export default function RootStack() {
         />
         <Stack.Screen
           name="RecipesDetails"
-          component={RecipesDetails}
+          component={MemoizedRecipesDetails}
           options={{
             headerTransparent: true,
             title: '',
@@ -163,3 +159,4 @@ const styles = StyleSheet.create({
     shadowRadius: 2.22,
   },
 });
+export const MemoiziedRootStack = React.memo(RootStack);
