@@ -34,7 +34,7 @@ export function NewRecipeComponents({navigation}) {
   const [refreshing, setRefreshing] = React.useState(false);
   const user = Redux.useSelector((state) => state.user.user);
   const [isLoading, setLoading] = React.useState(false);
-
+  let form = new FormData();
   let imgUri = '';
   function nameError() {
     if (!name) {
@@ -49,8 +49,7 @@ export function NewRecipeComponents({navigation}) {
     return null;
   }
 
-  const HandleImgs = (callback) => {
-    let form = new FormData();
+  const HandleImgs = () => {
     ImagePicker.launchImageLibrary(options, (response) => {
       // console.log('Response = ', response);
       if (response.didCancel) {
@@ -61,77 +60,88 @@ export function NewRecipeComponents({navigation}) {
         console.log('User tapped custom button: ', response.customButton);
       } else {
         const source = {uri: response.uri};
-        form.append('photo', {
+        form.append('image', {
           name: response.fileName,
           type: response.type,
           uri: response.uri,
         });
         setImg(source);
-        callback(form);
       }
     });
   };
   const uploadImage = async () => {
-    HandleImgs(async (form) => {
-      const path = await fetch(baseUrl + 'Image/UploadImage', {
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'multipart/form-data',
-          Authorization: 'Bearer ' + user.token,
-        },
-        method: 'POST',
-        body: form,
-      })
-        .then((req) => req.json())
-        .then((json) => {
-          return json.data;
-        });
-      imgUri = path;
-    });
+    await fetch(baseUrl + 'Image/UploadImageNew', {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'multipart/form-data',
+        Authorization: 'Bearer ' + user.token,
+      },
+      method: 'POST',
+      body: form,
+    })
+      .then((req) => req.json())
+      .then((json) => {
+        return json.data[0];
+      });
 
     //HandleImgs((form) => console.log(form));
   };
 
-  const handleSubmit = () => {
-    const err = nameError() || descriptionError();
-    const errorFullnull = nameError() && descriptionError();
-    if (errorFullnull !== null) {
-      Alert.alert('Error', 'You must fill out something!');
-      return;
-    } else if (err) {
-      Alert.alert('Validation error', err);
-      return;
-    } else {
-      setLoading(true);
-      fetch(baseUrl + 'Dish/createDish', {
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + user.token,
-        },
-        method: 'POST',
-        body: JSON.stringify({
-          name: name,
-          label: 'Hot',
-          featured: false,
-          category: 'mains',
-          price: 4.3,
-          description: description,
-          imgs: [imgUri],
-        }),
-      })
-        .then((res) => res.json())
-        .then((json) => {
-          setLoading(false);
-          if (json.status === 1) {
-            console.log('OK');
-          } else {
-            const error = 'Error ' + json.description;
-            throw error;
-          }
-        })
-        .catch((error) => console.log(error));
-    }
+  const handleSubmit = async () => {
+    // const err = nameError() || descriptionError();
+    // const errorFullnull = nameError() && descriptionError();
+    // if (errorFullnull !== null) {
+    //   Alert.alert('Error', 'You must fill out something!');
+    //   return;
+    // } else if (err) {
+    //   Alert.alert('Validation error', err);
+    //   return;
+    // } else {
+    //   setLoading(true);
+
+    await fetch(baseUrl + 'Image/UploadImageNew', {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'multipart/form-data',
+        Authorization: 'Bearer ' + user.token,
+      },
+      method: 'POST',
+      body: form,
+    })
+      .then((req) => req.json())
+      .then((json) => {
+        console.log(json.data);
+        return json.data[0];
+      });
+
+    //   await fetch(baseUrl + 'Dish/createDish', {
+    //     headers: {
+    //       Accept: 'application/json',
+    //       'Content-Type': 'application/json',
+    //       Authorization: 'Bearer ' + user.token,
+    //     },
+    //     method: 'POST',
+    //     body: JSON.stringify({
+    //       name: name,
+    //       label: 'Hot',
+    //       featured: false,
+    //       category: 'mains',
+    //       price: 4.3,
+    //       description: description,
+    //       imgs: [imgData],
+    //     }),
+    //   })
+    //     .then((res) => res.json())
+    //     .then((json) => {
+    //       setLoading(false);
+    //       if (json.status === 1) {
+    //         console.log('OK');
+    //       } else {
+    //         const error = 'Error ' + json.description;
+    //         throw error;
+    //       }
+    //     })
+    //     .catch((error) => console.log(error));
   };
   const checkImg = () => {
     if (!img) {
@@ -142,7 +152,7 @@ export function NewRecipeComponents({navigation}) {
           size={100}
           color="#fff"
           containerStyle={styles.iconContainer}
-          onPress={uploadImage}
+          onPress={HandleImgs}
         />
       );
     } else {

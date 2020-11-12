@@ -9,6 +9,7 @@ import {favorites} from './favorites';
 import {user} from './user';
 import {persistStore, persistCombineReducers} from 'redux-persist';
 import AsyncStorage from '@react-native-community/async-storage';
+
 const config = {
   key: 'root',
   storage: AsyncStorage,

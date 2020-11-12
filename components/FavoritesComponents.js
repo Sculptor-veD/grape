@@ -7,16 +7,21 @@ import {
   StatusBar,
   StyleSheet,
 } from 'react-native';
-import {ListItem} from 'react-native-elements';
+import {ListItem, Button} from 'react-native-elements';
 import {useSelector} from 'react-redux';
 import {Loading} from './LoadingComponent';
-
+import {pushNotifications} from '../services/index';
+import {Alert} from 'react-native';
+import messaging from '@react-native-firebase/messaging';
 function Favorites({navigation}) {
   const data = useSelector((state) => state.dishes.dishes);
   const isLoading = useSelector((state) => state.dishes.isLoading);
   const errMess = useSelector((state) => state.dishes.errMess);
   const favorites = useSelector((state) => state.favorites);
-  console.log(favorites);
+  const handleOnPress = () => {
+    pushNotifications.localNotification();
+  };
+
   const renderMenuItem = ({item, index}) => {
     return (
       <View>
@@ -47,6 +52,7 @@ function Favorites({navigation}) {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar hidden={true} />
+        <Button title="x" onPress={handleOnPress} />
         <FlatList
           data={data.filter((dish) => favorites.some((el) => el === dish.id))}
           renderItem={renderMenuItem}

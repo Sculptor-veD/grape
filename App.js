@@ -5,7 +5,9 @@ import {Provider} from 'react-redux';
 import {ConfigureStore} from './components/redux/configureStore';
 import {PersistGate} from 'redux-persist/es/integration/react';
 import {Loading} from './components/LoadingComponent';
+import {pushNotifications} from './services/index';
 
+pushNotifications.configure();
 const {persistor, store} = ConfigureStore();
 function App() {
   return (

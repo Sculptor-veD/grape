@@ -17,6 +17,7 @@ import {
 } from '@react-navigation/bottom-tabs';
 import {fetchDishes} from './redux/ActionCreators';
 import {useDispatch} from 'react-redux';
+import {pushNotifications} from '../services/index';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -87,8 +88,10 @@ export function RootStack() {
     function loadRecipes() {
       dispatch(fetchDishes());
     }
-
     loadRecipes();
+    const foregroundMessage = pushNotifications.receiveRemoteNotificationForeground();
+
+    return foregroundMessage;
   }, [dispatch]);
   return (
     <NavigationContainer>

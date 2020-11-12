@@ -15,6 +15,8 @@ import {Loading} from '../components/LoadingComponent';
 import {Rating, Icon} from 'react-native-elements';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import {useSelector, useDispatch} from 'react-redux';
+import {baseUrl} from './../shared/baseUrl';
+
 import {userLogout, fetchDishes} from './redux/ActionCreators';
 const {width, height} = Dimensions.get('window');
 const ITEM_SIZE = width * 0.73;
@@ -75,7 +77,10 @@ export function Recipes({navigation}) {
             onPress={() =>
               navigation.navigate('RecipesDetails', {dishId: item.id})
             }>
-            <Image style={styles.imgs} source={{uri: item.imgs[0]}} />
+            <Image
+              style={styles.imgs}
+              source={{uri: baseUrl + 'Image/open_image/' + item.imgs[0]}}
+            />
 
             <Rating
               readonly
@@ -169,7 +174,7 @@ const styles = StyleSheet.create({
     width: width * 0.74,
   },
   imgs: {
-    width: '100%',
+    width: ITEM_SIZE * 0.8,
     height: width * 0.54,
     resizeMode: 'cover',
     borderRadius: 2,
