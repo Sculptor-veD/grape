@@ -12,14 +12,42 @@ import {useSelector} from 'react-redux';
 import {Loading} from './LoadingComponent';
 import {pushNotifications} from '../services/index';
 import {Alert} from 'react-native';
-import messaging from '@react-native-firebase/messaging';
+import {
+  PushNotificationAndroid,
+  DeviceEventEmitter,
+} from 'react-native-push-notification';
 function Favorites({navigation}) {
   const data = useSelector((state) => state.dishes.dishes);
   const isLoading = useSelector((state) => state.dishes.isLoading);
   const errMess = useSelector((state) => state.dishes.errMess);
   const favorites = useSelector((state) => state.favorites);
+
+  React.useEffect(() => {
+    const handleAction = async () => {
+      PushNotificationAndroid.registerNotificationActions([
+        'Accept',
+        'Reject',
+        'Yes',
+        'No',
+      ]);
+      DeviceEventEmitter.addListener('notificationActionReceived', function (
+        action,
+      ) {
+        console.log('Notification action received: ' + action);
+        const info = JSON.parse(action.dataJSON);
+        if (info.action === 'Accept') {
+          Alert.alert('dsadas');
+        } else if (info.action === 'Reject') {
+          // Do work pertaining to Reject action here
+        }
+        // Add all the required actions handlers
+      });
+    };
+    return handleAction;
+  }, []);
+
   const handleOnPress = () => {
-    pushNotifications.localNotification();
+    pushNotifications.localNotification('dafdsa', 'fdafasdfsaf');
   };
 
   const renderMenuItem = ({item, index}) => {

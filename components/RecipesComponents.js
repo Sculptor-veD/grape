@@ -13,9 +13,10 @@ import {
 } from 'react-native';
 import {Loading} from '../components/LoadingComponent';
 import {Rating, Icon} from 'react-native-elements';
-import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
+import {FlatList, TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import {useSelector, useDispatch} from 'react-redux';
 import {baseUrl} from './../shared/baseUrl';
+import MaskedView from '@react-native-community/masked-view';
 
 import {userLogout, fetchDishes} from './redux/ActionCreators';
 const {width, height} = Dimensions.get('window');
@@ -26,11 +27,42 @@ const BACKDROP_HEIGHT = height * 0.65;
 const Backdrop = ({data, scrollX}) => {
   return (
     <View style={styles.backdrop}>
-      <Image
+      {/* <Image
         style={{width: 600, height: '80%', resizeMode: 'cover'}}
         source={{
           uri:
             'https://img.freepik.com/free-photo/slice-delicious-pizza-with-ingredients-textured-wooden-background_23-2147926094.jpg?size=626&ext=jpg',
+        }}
+      /> */}
+      <FlatList
+        data={data}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={{width: width, height: BACKDROP_HEIGHT}}
+        removeClippedSubviews={false}
+        renderItem={({item, index}) => {
+          const translateX = scrollX.interpolate({
+            inputRange: [(index - 1) * ITEM_SIZE, index * ITEM_SIZE],
+            outputRange: [0, width],
+          });
+          return (
+            <Animated.View
+              removeClippedSubviews={false}
+              style={{
+                position: 'absolute',
+                height: height,
+                width: translateX,
+                overflow: 'hidden',
+              }}>
+              <Image
+                source={{uri: baseUrl + 'Image/open_image/' + item.imgs[0]}}
+                style={{
+                  height: BACKDROP_HEIGHT,
+                  position: 'absolute',
+                  width,
+                }}
+              />
+            </Animated.View>
+          );
         }}
       />
     </View>
@@ -43,6 +75,7 @@ export function Recipes({navigation}) {
   const isLoading = useSelector((state) => state.dishes.isLoading);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
+  //const [data, setData] = React.useState([]);
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     dispatch(fetchDishes());
@@ -57,12 +90,13 @@ export function Recipes({navigation}) {
     ];
     const translateY = scrollX.interpolate({
       inputRange,
-      outputRange: [150, 90, 150],
-      extrapolate: 'clamp',
+      outputRange: [100, 80, 100],
+      extrapolate: 'extend',
     });
     return (
       <View style={styles.renderItem}>
         <Animated.View
+          removeClippedSubviews={false}
           style={{
             marginLeft: 30,
             marginHorizontal: 10,
@@ -82,13 +116,7 @@ export function Recipes({navigation}) {
               source={{uri: baseUrl + 'Image/open_image/' + item.imgs[0]}}
             />
 
-            <Rating
-              readonly
-              //  ratingBackgroundColor="#c8c7c8"
-              type="custom"
-              imageSize={20}
-              tintColor="#4d2610"
-            />
+            <Rating readonly type="custom" imageSize={20} tintColor="#4d2610" />
             <Text style={styles.itemName}>{item.name}</Text>
             <Text style={styles.description}>{item.description}</Text>
           </TouchableWithoutFeedback>
@@ -148,16 +176,19 @@ export function Recipes({navigation}) {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
-          data={data.reverse()}
+          removeClippedSubviews={false}
+          showsHorizontalScrollIndicator={false}
+          renderToHardwareTextureAndroid
+          data={data}
           keyExtractor={(item, index) => item.id.toString()}
           horizontal
           bounces={false}
           contentContainerStyle={{alignItems: 'center'}}
           onScroll={Animated.event(
             [{nativeEvent: {contentOffset: {x: scrollX}}}],
-            {useNativeDriver: true},
+            {useNativeDriver: false},
           )}
-          scrollEventThrottle={16}
+          scrollEventThrottle={1}
           renderItem={renderItem}
         />
       </View>
@@ -184,6 +215,7 @@ const styles = StyleSheet.create({
   itemName: {
     color: 'white',
     fontWeight: 'bold',
+    fontFamily: 'Goldman-Regular',
   },
   description: {
     color: 'white',

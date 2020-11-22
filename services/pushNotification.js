@@ -1,16 +1,20 @@
 import PushNotification from 'react-native-push-notification';
 import messaging from '@react-native-firebase/messaging';
-
-import {Alert, Platform} from 'react-native';
+import {Alert} from 'react-native';
+import {navigate} from './navigateWithoutProps';
 const configure = () => {
   PushNotification.configure({
     onRegister: function (token) {
       console.log('TOKEN:', token);
     },
-
+    onAction: function (notification) {
+      console.log('ACTION:', notification.action);
+      console.log('NOTIFICATION:', notification);
+      if (notification.action === 'OK') {
+        navigate('Home');
+      }
+    },
     onNotification: function (notification) {
-      // process the notification
-      // required on iOS only
       console.log('NOTIFICATION:', notification);
     },
     senderID: 'YOUR GCM SENDER ID',
@@ -45,11 +49,13 @@ const receiveRemoteNotificationBackground = () => {
   });
 };
 
-const localNotification = () => {
+const localNotification = (title, message, onPress) => {
   //  PushNotification.requestPermissions();
   PushNotification.localNotification({
-    title: 'Notification Title',
-    message: 'Notification Message',
+    title: title,
+    message: message,
+    actions: ['OK', 'Cancel'],
+    invokeApp: false,
   });
 };
 

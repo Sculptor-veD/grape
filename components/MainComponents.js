@@ -18,6 +18,7 @@ import {
 import {fetchDishes} from './redux/ActionCreators';
 import {useDispatch} from 'react-redux';
 import {pushNotifications} from '../services/index';
+import {navigationRef} from '../services/navigateWithoutProps';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -94,7 +95,7 @@ export function RootStack() {
     return foregroundMessage;
   }, [dispatch]);
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator>
         <Stack.Screen
           name="Authen"

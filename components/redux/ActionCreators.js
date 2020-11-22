@@ -1,5 +1,7 @@
 import * as ActionTypes from './ActionTypes';
 import {baseUrl} from '../../shared/baseUrl';
+import {navigate} from '../../services/navigateWithoutProps';
+
 export const postComments = () => (dispatch) => {
   fetch(baseUrl + 'Comment/createComment')
     .then(
@@ -119,7 +121,59 @@ export const fetchDishes = () => (dispatch) => {
     })
     .catch((error) => dispatch(dishesFailed(error.message)));
 };
-
+export const postCreateDish = (user, name, description, imgUrl) => (
+  dispatch,
+) => {
+  const dish = [
+    {
+      id: Math.random(),
+      name: name,
+      label: 'Hot',
+      description: description,
+      featured: false,
+      category: 'mains',
+      price: 4.3,
+      accountId: 1,
+      imgs: [imgUrl],
+      commentState: 1,
+      createdDate: new Date(),
+    },
+  ];
+  dispatch(dishesLoading());
+  fetch(baseUrl + 'Dish/createDish', {
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + user.token,
+    },
+    method: 'POST',
+    body: JSON.stringify({
+      name: name,
+      label: 'Hot',
+      featured: false,
+      category: 'mains',
+      price: 4.3,
+      description: description,
+      imgs: [imgUrl],
+    }),
+  })
+    .then((res) => res.json())
+    .then((json) => {
+      if (json.status === 1) {
+        console.log('OK');
+        dispatch(addNewDish(dish));
+        navigate('Home');
+      } else {
+        const error = 'Error ' + json.description;
+        throw error;
+      }
+    })
+    .catch((error) => console.log(error));
+};
+export const addNewDish = (dish) => ({
+  type: ActionTypes.ADD_NEW_DISH,
+  payload: dish,
+});
 export const dishesLoading = () => ({
   type: ActionTypes.DISHES_LOADING,
 });

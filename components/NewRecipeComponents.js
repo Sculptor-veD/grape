@@ -17,7 +17,8 @@ import {baseUrl} from '../shared/baseUrl';
 import {ScrollView} from 'react-native-gesture-handler';
 import {Image, Icon} from 'react-native-elements';
 import ImagePicker from 'react-native-image-picker';
-
+import {postCreateDish} from './redux/ActionCreators';
+import {Loading} from './LoadingComponent';
 const {width, height} = Dimensions.get('window');
 const options = {
   title: 'Select Avatar',
@@ -31,11 +32,17 @@ export function NewRecipeComponents({navigation}) {
   const [name, setName] = useState();
   const [description, setDescription] = useState();
   const [img, setImg] = useState();
+  const [imgUrl, setImgUrl] = useState();
   const [refreshing, setRefreshing] = React.useState(false);
-  const user = Redux.useSelector((state) => state.user.user);
   const [isLoading, setLoading] = React.useState(false);
+  const [contentInsetBottom, setInset] = React.useState();
+  const user = Redux.useSelector((state) => state.user.user);
+  const dishes = Redux.useSelector((state) => state.dishes.dishes);
+  const inputRef = React.createRef();
+  const inputRef2 = React.createRef();
+  const btnRef = React.createRef();
+  const dispatch = Redux.useDispatch();
   let form = new FormData();
-  let imgUri = '';
   function nameError() {
     if (!name) {
       return 'Invalid name';
@@ -49,7 +56,7 @@ export function NewRecipeComponents({navigation}) {
     return null;
   }
 
-  const HandleImgs = () => {
+  const HandleImgs = async (callback) => {
     ImagePicker.launchImageLibrary(options, (response) => {
       // console.log('Response = ', response);
       if (response.didCancel) {
@@ -62,86 +69,37 @@ export function NewRecipeComponents({navigation}) {
         const source = {uri: response.uri};
         form.append('image', {
           name: response.fileName,
-          type: response.type,
+          type: 'image/jpeg',
           uri: response.uri,
+          data: response.data,
         });
         setImg(source);
+        callback(form);
       }
     });
   };
   const uploadImage = async () => {
-    await fetch(baseUrl + 'Image/UploadImageNew', {
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'multipart/form-data',
-        Authorization: 'Bearer ' + user.token,
-      },
-      method: 'POST',
-      body: form,
-    })
-      .then((req) => req.json())
-      .then((json) => {
-        return json.data[0];
-      });
-
-    //HandleImgs((form) => console.log(form));
+    HandleImgs(async () => {
+      await fetch(baseUrl + 'Image/UploadImageNew', {
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'multipart/form-data',
+          Authorization: 'Bearer ' + user.token,
+        },
+        method: 'POST',
+        body: form,
+      })
+        .then((req) => req.json())
+        .then((json) => {
+          console.log(json);
+          if (json) setImgUrl(json.data[0]);
+        });
+    });
   };
 
-  const handleSubmit = async () => {
-    // const err = nameError() || descriptionError();
-    // const errorFullnull = nameError() && descriptionError();
-    // if (errorFullnull !== null) {
-    //   Alert.alert('Error', 'You must fill out something!');
-    //   return;
-    // } else if (err) {
-    //   Alert.alert('Validation error', err);
-    //   return;
-    // } else {
-    //   setLoading(true);
-
-    await fetch(baseUrl + 'Image/UploadImageNew', {
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'multipart/form-data',
-        Authorization: 'Bearer ' + user.token,
-      },
-      method: 'POST',
-      body: form,
-    })
-      .then((req) => req.json())
-      .then((json) => {
-        console.log(json.data);
-        return json.data[0];
-      });
-
-    //   await fetch(baseUrl + 'Dish/createDish', {
-    //     headers: {
-    //       Accept: 'application/json',
-    //       'Content-Type': 'application/json',
-    //       Authorization: 'Bearer ' + user.token,
-    //     },
-    //     method: 'POST',
-    //     body: JSON.stringify({
-    //       name: name,
-    //       label: 'Hot',
-    //       featured: false,
-    //       category: 'mains',
-    //       price: 4.3,
-    //       description: description,
-    //       imgs: [imgData],
-    //     }),
-    //   })
-    //     .then((res) => res.json())
-    //     .then((json) => {
-    //       setLoading(false);
-    //       if (json.status === 1) {
-    //         console.log('OK');
-    //       } else {
-    //         const error = 'Error ' + json.description;
-    //         throw error;
-    //       }
-    //     })
-    //     .catch((error) => console.log(error));
+  const handleSubmit = () => {
+    setLoading(true);
+    dispatch(postCreateDish(user, name, description, imgUrl));
   };
   const checkImg = () => {
     if (!img) {
@@ -152,7 +110,7 @@ export function NewRecipeComponents({navigation}) {
           size={100}
           color="#fff"
           containerStyle={styles.iconContainer}
-          onPress={HandleImgs}
+          onPress={uploadImage}
         />
       );
     } else {
@@ -164,58 +122,85 @@ export function NewRecipeComponents({navigation}) {
     setImg(null);
     setRefreshing(false);
   }, []);
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }>
-        <ImageBackground
-          blurRadius={1.2}
-          style={styles.images}
-          source={require('../asset/charles-deluvio-D-vDQMTfAAU-unsplash.jpg')}>
-          <Text style={styles.header}>Publish recipe</Text>
-          <View style={styles.details}>
-            <Text style={styles.h2}>Photos</Text>
-            <View style={styles.photoImage}>{checkImg()}</View>
-            <Text style={styles.h2}>Name</Text>
-            <TextInput
-              placeholder="Name"
-              style={styles.roundedInput}
-              onChangeText={(text) => setName(text)}
-              value={name}
-            />
-            <Text style={styles.h2}>Description</Text>
-            <TextInput
-              placeholder="Description"
-              style={styles.roundedInput}
-              multiline={true}
-              numberOfLines={4}
-              onChangeText={(text) => setDescription(text)}
-              value={description}
-            />
-            <View style={styles.btnView}>
-              <TouchableOpacity
-                style={styles.loginBtn}
-                onPress={() => navigation.navigate('Home')}>
-                <Text style={styles.loginBtnLabel}>CANCEL</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.loginBtn}
-                onPress={() => handleSubmit()}>
-                <Text style={styles.loginBtnLabel}>SUBMIT</Text>
-              </TouchableOpacity>
+
+  if (dishes.isLoading === false && isLoading === true)
+    Alert.alert(
+      'Success',
+      'Ban da tao moi 1 dish',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => navigation.navigate('Home')},
+      ],
+      {cancelable: false},
+    );
+  else {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ScrollView
+          automaticallyAdjustContentInsets={false}
+          contentInset={{top: 0, bottom: contentInsetBottom}}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
+          <ImageBackground
+            blurRadius={1.2}
+            style={styles.images}
+            source={require('../asset/charles-deluvio-D-vDQMTfAAU-unsplash.jpg')}>
+            <Text style={styles.header}>Publish recipe</Text>
+            <View style={styles.details}>
+              <Text style={styles.h2}>Photos</Text>
+              <View style={styles.photoImage}>{checkImg()}</View>
+              <Text style={styles.h2}>Name</Text>
+              <TextInput
+                placeholder="Name"
+                style={styles.roundedInput}
+                onChangeText={(text) => setName(text)}
+                value={name}
+                ref={inputRef}
+                onSubmitEditing={() => inputRef2.current.focus()}
+              />
+              <Text style={styles.h2}>Description</Text>
+              <TextInput
+                placeholder="Description"
+                style={styles.roundedInput}
+                multiline={true}
+                numberOfLines={4}
+                onChangeText={(text) => setDescription(text)}
+                value={description}
+                ref={inputRef2}
+                onContentSizeChange={(event) =>
+                  setInset(event.nativeEvent.contentSize.height)
+                }
+                onSubmitEditing={() => handleSubmit}
+              />
+              <View style={styles.btnView}>
+                <TouchableOpacity
+                  style={styles.loginBtn}
+                  onPress={() => navigation.navigate('Home')}>
+                  <Text style={styles.loginBtnLabel}>CANCEL</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.loginBtn}
+                  onPress={handleSubmit}
+                  ref={btnRef}>
+                  <Text style={styles.loginBtnLabel}>SUBMIT</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        </ImageBackground>
-      </ScrollView>
-    </SafeAreaView>
-  );
+          </ImageBackground>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    //marginTop: StatusBar.currentHeight,
+    flexGrow: 1,
   },
   roundedInput: {
     color: 'white',
@@ -239,11 +224,11 @@ const styles = StyleSheet.create({
   },
   details: {
     padding: 10,
-    flex: 1 / 2,
+    flexGrow: 1,
   },
   images: {
+    flexGrow: 1,
     flex: 1,
-    height: height * 1.1,
   },
   photoImage: {
     height: 200,
